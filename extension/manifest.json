@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Análisis GPT · Captura deportiva",
+  "version": "0.2.0",
+  "minimum_chrome_version": "116",
+  "description": "Panel lateral para revisar y exportar datos deportivos públicos seleccionados por ti.",
+  "permissions": ["activeTab", "scripting", "sidePanel"],
+  "action": {"default_title": "Abrir captura deportiva"},
+  "background": {"service_worker": "background.js", "type": "module"},
+  "side_panel": {"default_path": "panel.html"},
+  "content_security_policy": {
+    "extension_pages": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'"
+  }
+}

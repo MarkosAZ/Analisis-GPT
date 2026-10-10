@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Captura deportiva</title>
+  <link rel="stylesheet" href="panel.css">
+  <script src="panel.mjs" type="module"></script>
+</head>
+<body>
+  <header><span class="eyebrow">ANÁLISIS GPT / CAPTURA LOCAL</span><h1>Del partido<br>a tus datos.</h1><p>Consulta la web en la pestaña. Selecciona y revisa sus datos aquí.</p></header>
+  <main>
+    <section aria-labelledby="source-title">
+      <h2 id="source-title"><span>01</span> Abre una fuente</h2>
+      <label for="url">Web de calendario o cuotas</label>
+      <div class="row"><input id="url" type="url" placeholder="https://www.sofascore.com" autocomplete="off"><button id="open" type="button">Abrir</button></div>
+      <p class="hint">SofaScore, Betano u otra fuente que tengas permiso de consultar. Tras abrirla, pulsa el icono de la extensión en esa pestaña.</p>
+      <button id="connect" class="secondary" type="button">Usar pestaña actual</button>
+      <p id="source" class="source">Sin página vinculada</p>
+    </section>
+    <section aria-labelledby="data-title">
+      <h2 id="data-title"><span>02</span> Prepara la captura</h2>
+      <label for="kind">Qué vas a guardar</label>
+      <select id="kind"><option value="CALENDAR">Partido / calendario</option><option value="ODDS">Mercado de cuotas</option></select>
+      <form id="capture-form" autocomplete="off"></form>
+      <p class="hint">El botón Elegir selecciona un texto visible de la página. También puedes completar los campos a mano. Usa IDs estables de la fuente, sin enlaces ni datos de cuenta.</p>
+    </section>
+    <section aria-labelledby="review-title">
+      <h2 id="review-title"><span>03</span> Revisa y exporta</h2>
+      <p class="hint">Cuotas: todos los lados deben corresponder a la misma casa, evento, periodo y línea. No incluyas boletas ni apuestas realizadas.</p>
+      <button id="preview" class="primary" type="button">Preparar vista previa</button>
+      <div id="review" hidden><pre id="json" tabindex="0" aria-label="JSON de la captura"></pre><label class="check"><input id="confirmed" type="checkbox">Revisé los datos: son públicos y describen un solo partido o mercado.</label><button id="download" class="primary" type="button" disabled>Descargar JSON</button></div>
+      <button id="reset" class="secondary" type="button">Nueva captura</button>
+    </section>
+    <p id="notice" role="status" aria-live="polite">Listo. Vincula una pestaña para empezar.</p>
+  </main>
+  <footer>Solo selección manual · Sin subida automática<br>La captura no genera predicciones ni apuestas.</footer>
+</body>
+</html>

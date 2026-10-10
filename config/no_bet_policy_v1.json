@@ -1,0 +1,25 @@
+{
+  "version": "no_bet_policy_v1",
+  "state": "DRAFT",
+  "description": "Unactivated: numeric thresholds were not agreed. Freeze them prospectively before launch; never infer them from holdout or later results.",
+  "thresholds": {
+    "min_edge_pp": null,
+    "min_data_quality": null,
+    "max_ood_score": null,
+    "max_ensemble_dispersion": null,
+    "max_odds_age_seconds": null
+  },
+  "required_checks": [
+    "EDGE_INSUFFICIENT",
+    "DATA_QUALITY_LOW",
+    "MODEL_UNVALIDATED",
+    "OOD_HIGH",
+    "ENSEMBLE_UNSTABLE",
+    "ODDS_STALE",
+    "CRITICAL_CONTEXT_MISSING"
+  ],
+  "paper_policies": [
+    {"version": "paper_all_v1", "state": "DRAFT", "selection_rule": "MAX_POSITIVE_EDGE", "stake_units": 1, "odds_source_rule": null},
+    {"version": "paper_recommended_v1", "state": "DRAFT", "selection_rule": "MAX_POSITIVE_EDGE", "stake_units": 1, "odds_source_rule": null}
+  ]
+}

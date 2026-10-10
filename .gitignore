@@ -1,0 +1,35 @@
+# Source conversation: private context, never publish or package.
+Analizar mercados deportivos.html
+Analizar mercados deportivos_files/
+attachments/
+
+# Credentials and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Local data, object storage, database exports and private betting
+.local/
+data/
+raw/
+real_bets*.json
+*.dump
+*.backup
+
+# Python and tool outputs
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+# Local exports from the browser are data, never application assets.
+sports-capture-*.json
+node_modules/

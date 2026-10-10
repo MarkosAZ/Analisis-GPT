@@ -1,0 +1,51 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sports-analysis-foundation"
+version = "0.1.0"
+description = "Auditable point-in-time sports analysis foundation"
+requires-python = ">=3.12"
+dependencies = ["psycopg[binary]>=3.2,<4"]
+
+[project.scripts]
+sports-db = "sports_analysis.db.migrate:main"
+sports-capture = "sports_analysis.browser_cli:main"
+
+[dependency-groups]
+dev = [
+  "mypy>=1.15,<2",
+  "pytest>=9.0.3,<10",
+  "ruff>=0.11,<1",
+  "pip-audit>=2.9,<3",
+  "pyyaml>=6,<7",
+  "playwright>=1.58,<2",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/sports_analysis"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/", "migrations/", "config/", "pyproject.toml", "README.md"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "S"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101", "S105", "S106", "S608"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = ["integration: requires a disposable PostgreSQL database via TEST_DATABASE_URL"]
