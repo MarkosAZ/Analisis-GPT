@@ -58,6 +58,8 @@ Archivos modificados:
 | Pip-audit | Sin vulnerabilidades conocidas; paquete propio editable excluido |
 | Build Python | Wheel/sdist construidos e inspeccionados para excluir material privado |
 | Build estático | Directorio público generado, contrato y lista de assets comprobados |
+| Build remoto Pages | Aprobado; artifact generado por GitHub Actions |
+| Deploy remoto Pages | Falló: `configure-pages` devolvió Not Found; requiere habilitar/configurar Pages |
 | Repositorio público | 108 archivos comprobados; sin HTML de contexto ni credenciales detectadas |
 | Arranque HTTP | Servidor activo; HTML y calendario devuelven 200 y contrato válido |
 | CLI público | Exportación real contra PostgreSQL desechable validada |
@@ -88,14 +90,19 @@ Las validaciones rechazan en vez de truncar snapshots que superen 5000 ciclos o
 2 MiB; la paginación será necesaria si el historial supera esos límites.
 
 La red del cloud respondió HTTP 403 para `api.github.com` y `markosaz.github.io`.
-Por ello el despliegue y la configuración de Pages no están verificados desde
-esta sesión. Git HTTPS está disponible. El sitio necesita Source: GitHub Actions
-si todavía no está habilitado; no requiere agregar un PAT. Los resultados locales
-no se presentan como una ejecución exitosa de Actions remota.
+Git HTTPS y la página pública de Actions sí están disponibles. El [workflow remoto](https://github.com/MarkosAZ/Analisis-GPT/actions/runs/38103689223)
+del commit `e76ea6c` construyó el artifact y falló al desplegar: `configure-pages`
+devolvió Not Found y pidió habilitar Pages con Source: GitHub Actions. El sitio
+todavía no está publicado. No se necesita agregar un PAT; un administrador puede
+completar la configuración desde GitHub y repetir la ejecución.
+
+GitHub también avisó de Actions con runtime Node 20 forzado a Node 24. El build
+remoto funcionó; actualizar esas versiones oficiales fijadas queda como
+mantenimiento pendiente, separado del bloqueo de configuración de Pages.
 
 ## Pendiente y siguiente fase
 
-Primero comprobar Pages en GitHub y habilitar la fuente de Actions si falta.
+Primero habilitar Pages en GitHub con Source: GitHub Actions y repetir el despliegue.
 Después cerrar Fase 2: aceptación de captura autorizada real, temporadas,
 resolución auditada de conflictos, persistencia Neon/R2 y fuente ejecutable en
 servidor o recepción autenticada; entonces añadir refresh/scheduler con slots,

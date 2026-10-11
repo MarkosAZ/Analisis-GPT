@@ -80,10 +80,15 @@ un PAT ni secretos de base de datos; el GITHUB_TOKEN ordinario no puede habilita
 por sí solo un sitio Pages sin configurar.
 
 Dirección prevista: `https://markosaz.github.io/Analisis-GPT/`. Confirma el enlace
-real y el éxito en el environment `github-pages`. En esta sesión la red del cloud
-rechazó con HTTP 403 tanto la API de GitHub como ese dominio; por ello no se ha
-verificado desde aquí la configuración ni el resultado remoto del despliegue.
-Esto es independiente de la ejecución HTTP y las pruebas locales de la web.
+real y el éxito en el environment `github-pages`. El [primer workflow remoto](https://github.com/MarkosAZ/Analisis-GPT/actions/runs/38103689223)
+construyó el sitio y generó el artifact, pero `configure-pages` falló con **Not Found**:
+el sitio debe estar habilitado y configurado para GitHub Actions. Completa el paso
+administrativo anterior y vuelve a ejecutar el workflow.
+
+La página pública de Actions permitió comprobar ese resultado. La red del cloud
+rechazó con HTTP 403 tanto `api.github.com` como el dominio del sitio, de modo que
+no se pudo configurar Pages ni abrir su dirección desde esta sesión. La ejecución
+HTTP y las pruebas locales de la web sí se completaron.
 
 ## Validación y límites
 
