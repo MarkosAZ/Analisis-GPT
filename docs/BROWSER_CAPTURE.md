@@ -117,6 +117,11 @@ snapshot operacional, no un historial apto para backtest. Un futuro scheduler de
 volver a comprobar estado/inicio en PostgreSQL antes de actuar: ACTIVE puede
 quedar obsoleto si no llega ninguna captura de actualización.
 
+Para ver el calendario en la web existe un contrato distinto:
+`sports-capture export-calendar .local/calendar.json`. Exporta ciclos públicos
+completos y sus estados actuales; el botón **Cargar calendario** lo abre localmente
+sin subirlo. No cargues capturas RAW en la web. Véase [WEB.md](WEB.md).
+
 ## GitHub Actions y siguiente incremento
 
 CI prueba el código, migraciones, JS y UI sin secretos y empaqueta únicamente los

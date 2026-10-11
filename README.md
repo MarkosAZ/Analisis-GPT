@@ -7,7 +7,8 @@ separados. La información histórica se consulta según lo que estaba disponibl
 
 Foundation está completada. **Fase 2 está en curso**: extensión local para Chrome/
 Edge, capturas manuales revisadas, importación RAW, calendario, mappings, ciclos y
-tracking. Todavía no hay predicciones, proveedor automático ni sitio Pages.
+tracking. Incluye una **web HTML estática** con calendario, seguimiento e historial
+de ciclos. Todavía no hay predicciones ni proveedor automático.
 
 Para usar la extensión, sigue la [guía de instalación](extension/README.md).
 El [recorrido de importación](docs/BROWSER_CAPTURE.md) explica cómo conectar las
@@ -21,6 +22,18 @@ uv run pytest tests/unit
 uv run ruff check .
 uv run mypy
 ```
+
+Para ejecutar la página desde este repositorio:
+
+```bash
+uv run python scripts/serve_site.py --port 8000
+```
+
+El servidor local construye y sirve únicamente archivos públicos. La página empieza
+sin partidos publicados; **Explorar ejemplo** abre datos ficticios identificados.
+Consulta [la guía web](docs/WEB.md) para cargar datos, generar el sitio y activar
+GitHub Pages con el workflow incluido. No abras `index.html` mediante `file://`:
+los módulos y JSON necesitan HTTP.
 
 Consulta [DEVELOPMENT.md](DEVELOPMENT.md) para iniciar PostgreSQL desechable,
 validar migraciones y ejecutar también la suite de integración. No se requieren
@@ -45,6 +58,8 @@ src/sports_analysis/
   db/           # runner de migraciones con hashes y transacciones
 migrations/     # esquemas, constraints, semillas y permisos PostgreSQL
 extension/      # panel lateral MV3, selección explícita y exportación JSON
+index.html      # entrada de la web estática
+web/            # interfaz, contrato público y ejemplo sintético
 config/         # políticas versionadas, pendientes de activación
 tests/          # dominio e integración con PostgreSQL real
 docs/           # especificación, estado y ADRs
@@ -54,5 +69,6 @@ scripts/        # controles del repositorio público
 
 El siguiente hito es cerrar **Fase 2**: temporadas, resolución de conflictos,
 fuente/recepción autorizada y workflows operativos con persistencia real. La
-extensión ya conserva cuotas RAW; benchmarks, modelos, evaluación y Pages siguen
-en sus fases. El estado y las limitaciones están en la matriz de implementación.
+extensión ya conserva cuotas RAW; benchmarks, modelos, evaluación y las vistas
+avanzadas de Pages siguen en sus fases. El estado y las limitaciones están en la
+matriz de implementación.

@@ -31,7 +31,7 @@ No usar `pull_request_target`. CI para PRs/forks no recibe secretos de producci�
 
 No pasar `real_bet`, stake, cuota tomada, moneda ni información privada como inputs de un workflow público. El enmascaramiento automático de Actions no protege necesariamente valores derivados; no imprimirlos. Evitar trazas de clientes que incluyan DSN/headers y errores remotos con contenido sensible.
 
-No subir dumps, backups, datasets privados o capturas con credenciales como artifacts. Los futuros artifacts de Pages se generan desde una lista explícita de rutas publicables; no empaquetar todo el checkout. Los tokens de R2/Neon deben tener el mínimo alcance necesario.
+No subir dumps, backups, datasets privados o capturas con credenciales como artifacts. Los artifacts de Pages se generan desde una lista explícita de rutas publicables en `.local/pages`; no empaquetar todo el checkout. Solo el job de despliegue tiene `pages: write` e `id-token: write`, limitado a main del repositorio no fork. El build no recibe credenciales de producción. Los tokens de R2/Neon deben tener el mínimo alcance necesario.
 
 ## Repositorio privado futuro
 
@@ -63,9 +63,15 @@ Las credenciales PostgreSQL viven únicamente en el entorno del importador. Los
 roles públicos conservan la denegación sobre `private_betting`. Este incremento
 no incluye subida remota, apuestas reales ni nuevos secretos de Actions.
 
-## Frontend y exportaciones futuras
+## Frontend y exportaciones
 
-GitHub Pages no se conecta a PostgreSQL. Consume JSON públicos versionados y mínimos. La sección privada solo consulta el repositorio privado cuando el usuario la configura. Una CSP declarada en `<meta>` limitará scripts y destinos de conexión; Pages no permite controlar todos los encabezados de respuesta. Minimizar dependencias/scripts externos porque el JavaScript de la página podría acceder a tokens del navegador.
+GitHub Pages no se conecta a PostgreSQL. Consume JSON públicos versionados y mínimos. La CSP de `index.html` limita scripts, estilos y conexiones al propio sitio; no hay dependencias remotas, iframes ni captura de tokens. Pages no permite controlar todos los encabezados de respuesta. Una futura sección privada necesitará una revisión independiente de permisos.
+
+El contrato `public_calendar_v1` rechaza claves extra, cadenas de ciclos rotas y
+observaciones posteriores a la generación. Tiene límites de 2 MiB y 5000 ciclos;
+los textos se muestran mediante `textContent`. Los archivos elegidos por el
+usuario se validan en memoria, sin subida ni persistencia. No acepta capturas RAW.
+El directorio del servidor local se construye de forma aislada y no lista rutas.
 
 Antes de publicar, comprobar los campos permitidos, las rutas incluidas y la ausencia del HTML de contexto, configuración local, objetos privados y dumps. Los backups pertenecen a object storage privado con una política propia de acceso/retención.
 

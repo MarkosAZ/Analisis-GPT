@@ -13,6 +13,7 @@ from psycopg.rows import dict_row
 
 from sports_analysis.config import Settings
 from sports_analysis.db.browser import BrowserIngestor
+from sports_analysis.db.public_calendar import export_public_calendar
 from sports_analysis.domain.events import Sport
 from sports_analysis.providers.browser import MAX_CAPTURE_BYTES
 from sports_analysis.storage.objects import LocalObjectStore
@@ -39,6 +40,8 @@ def main() -> int:
     track.add_argument("--request-id", type=UUID, required=True)
     export = commands.add_parser("export-tracking")
     export.add_argument("output", type=Path)
+    site_export = commands.add_parser("export-calendar")
+    site_export.add_argument("output", type=Path)
     args = parser.parse_args()
     try:
         settings = Settings.from_env()
@@ -73,6 +76,11 @@ def main() -> int:
                 with args.output.open("xb") as handle:
                     handle.write(ingestor.tracking_json() + b"\n")
                 print("Public tracking snapshot exported.")
+            elif args.command == "export-calendar":
+                payload = export_public_calendar(connection)
+                with args.output.open("xb") as handle:
+                    handle.write(payload + b"\n")
+                print("Public calendar snapshot exported.")
     except (psycopg.Error, OSError, ValueError):
         parser.exit(
             1,

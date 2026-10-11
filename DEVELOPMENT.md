@@ -17,7 +17,7 @@ docker run --detach --rm --name sports-foundation-db \
 docker exec sports-foundation-db pg_isready -U postgres -d sports_test
 export TEST_DATABASE_URL=postgresql://postgres@127.0.0.1:54329/sports_test
 uv run pytest
-node --test tests/extension/*.test.mjs
+node --test tests/extension/*.test.mjs tests/web/*.test.mjs
 ```
 
 Espera a que `pg_isready` confirme disponibilidad. Ese contenedor es una base
@@ -57,19 +57,22 @@ uv run ruff check .
 uv run ruff format --check .
 uv run mypy
 uv run pytest
+node --test tests/extension/*.test.mjs tests/web/*.test.mjs
 uv run python scripts/check_public_repository.py
 uv run pip-audit --skip-editable --progress-spinner off
 uv build
+uv run python scripts/build_site.py --output .local/pages
 ```
 
 `uv.lock` fija dependencias y hashes; `uv sync --frozen` evita actualizar versiones
 durante CI. Las Actions y la imagen PostgreSQL están fijadas por SHA/digest. No se
-suben artifacts. El chequeo público detecta algunos formatos de credenciales y
+suben únicamente assets explícitos en el workflow de Pages; CI no publica artifacts.
+El chequeo público detecta algunos formatos de credenciales y
 archivos prohibidos; es una defensa adicional, no una garantía de detectar todo
 secreto posible. `pip-audit` requiere acceso a su índice de vulnerabilidades.
 
-Además del paquete Python existe la extensión local; Pages y un servidor remoto
-de recepción siguen pendientes. Los fixtures y el object store local funcionan
+Además del paquete Python existen la extensión local y la web estática con build
+y workflow Pages. Un servidor remoto de recepción sigue pendiente. Los fixtures y el object store local funcionan
 sin fuentes externas. La integración R2 y Parquet todavía no están conectadas.
 
 ## Extensión y navegador de pruebas
@@ -104,6 +107,23 @@ La [operación del importador](docs/BROWSER_CAPTURE.md) usa solo variables de
 entorno para DB/almacenamiento. Las migraciones 0005/0006 se agregan a las cuatro
 anteriores sin modificarlas. El recorrido no necesita secretos de producción
 cuando se ejecuta sobre el PostgreSQL desechable de desarrollo.
+
+## Ejecutar la web HTML
+
+```bash
+uv run python scripts/serve_site.py --port 8000
+```
+
+Construye el sitio y sirve solo ese directorio temporal en loopback, sin listar
+directorios ni exponer el checkout. Reinicia el proceso tras modificar assets.
+Los tests `uv run pytest tests/web` abren esta misma web en Chromium real;
+`node --test tests/web/*.test.mjs` prueba contratos, filtros y fechas Lima.
+
+El build requiere un directorio de salida nuevo: usa otro nombre en una segunda
+ejecución. No uses un servidor HTTP sobre la raíz del repositorio. Para exportar
+datos públicos desde PostgreSQL, carga de archivos y publicación, consulta
+[WEB.md](docs/WEB.md). La web funciona sin PostgreSQL con el calendario vacío o
+el ejemplo sintético explícito; no requiere secrets de Actions.
 
 ## Cambios futuros
 

@@ -15,13 +15,29 @@ def test_public_ci_has_no_secrets_or_untrusted_write_permissions() -> None:
         assert data["permissions"] == {"contents": "read"}
         assert "secrets." not in text
         assert "upload-artifact" not in text
-        for job in data["jobs"].values():
-            assert "permissions" not in job or job["permissions"] == {"contents": "read"}
+        is_pages = path.name == "pages.yml"
+        if is_pages:
+            assert set(data["on"]) == {"push", "workflow_dispatch"}
+            assert data["on"]["push"]["branches"] == ["main"]
+        for job_name, job in data["jobs"].items():
+            if is_pages:
+                assert "github.ref == 'refs/heads/main'" in job["if"]
+                assert "github.event.repository.fork == false" in job["if"]
+            if is_pages and job_name == "deploy":
+                assert job["permissions"] == {"pages": "write", "id-token": "write"}
+            else:
+                assert job.get("permissions", {"contents": "read"}) == {"contents": "read"}
             for step in job["steps"]:
                 if "uses" in step:
                     _, revision = step["uses"].rsplit("@", 1)
                     assert len(revision) == 40
                     assert all(c in "0123456789abcdef" for c in revision)
+                    if "upload-pages-artifact" in step["uses"]:
+                        assert is_pages and job_name == "build"
+                        assert step["with"]["path"] == ".local/pages"
+        if is_pages:
+            assert data["jobs"]["deploy"]["needs"] == "build"
+            assert data["jobs"]["deploy"]["environment"]["name"] == "github-pages"
 
 
 def test_test_database_is_mandatory_in_ci() -> None:

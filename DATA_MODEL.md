@@ -139,6 +139,13 @@ En el provider manual las temporadas no proporcionadas permanecen NULL. El
 tracking pertenece a un ciclo y no se transfiere automáticamente tras aplazarse.
 Un estado FINISHED del calendario no crea resultados confirmados ni liquidaciones.
 
+`public_calendar_v1` es un contrato de exportación, no una nueva tabla. Expone
+identidad pública del evento/ciclo, deporte, competición, equipos, fechas,
+estados y `last_observed_at`. Este último es la disponibilidad de la última
+observación APPLIED vinculada a ese ciclo; no la fecha de cada mutación del estado.
+`generated_at` fija la generación de la vista actual. No se utiliza este snapshot
+para datasets ni backtesting; estos requieren el ledger temporal `as_of`.
+
 Las credenciales de migración no deben ser las de runtime público. Los detalles de ejecución y versión mínima están en [DEVELOPMENT.md](DEVELOPMENT.md). Los resultados de validación y cualquier limitación pendiente se registran en [IMPLEMENTATION_STATUS](docs/IMPLEMENTATION_STATUS.md).
 
 El runner toma un advisory lock transaccional y verifica el SHA-256 del historial aplicado. Repetir una migración ya aplicada es un no-op; modificar, eliminar o insertar fuera de orden una versión histórica produce un error. Los cambios futuros se agregan en una nueva migración. Las pruebas usan una base temporal independiente, nunca un Neon de producción.

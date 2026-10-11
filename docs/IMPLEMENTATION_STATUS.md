@@ -53,7 +53,7 @@ Estos estados corresponden a mecanismos Foundation. No equivalen a providers rea
 | Redes/embeddings/contexto/consenso | PLANIFICADO PARA UNA FASE POSTERIOR | Fase 6; promoción solo tras mejora fuera de muestra |
 | Workflow manual privilegiado de holdout | PLANIFICADO PARA UNA FASE POSTERIOR | Administración separada y auditoría |
 | R2/Neon reales y backups privados | PLANIFICADO PARA UNA FASE POSTERIOR | Configuración, credenciales y pruebas de conectividad |
-| JSON públicos optimizados y Pages | PLANIFICADO PARA UNA FASE POSTERIOR | Fase 7; schema_version, CSP y whitelist de exportación |
+| JSON públicos y Pages | IMPLEMENTADO PARCIALMENTE | Web de calendario, contrato público, CSP, build y workflow; falta verificar despliegue remoto y añadir vistas de análisis/evaluación en sus fases |
 | Repositorio privado, tokens y apuestas reales | PLANIFICADO PARA UNA FASE POSTERIOR | Proyecto separado; nunca workflows públicos |
 | Monitoreo de cron desactivado y recuperación tras huecos | PLANIFICADO PARA UNA FASE POSTERIOR | Antes del primer workflow programado operativo |
 
@@ -92,6 +92,12 @@ al alcance probado, no certifica autenticidad de datos manuales ni acceso real a
 SofaScore/Betano.
 
 ## Siguiente incremento exacto
+
+La iteración 03 incorpora la web HTML pedida por el usuario: consulta de partidos,
+tracking e historial de ciclos, exportación pública SQL, validación estricta,
+servidor aislado y workflow Pages. No añade migraciones ni modelos. El alcance,
+validaciones y límites están en [ITERATION_03_REPORT.md](ITERATION_03_REPORT.md) y
+la operación en [WEB.md](WEB.md). Despliegue público remoto aún no verificado.
 
 Completar **Calendario + providers + tracking**: aceptación de la extensión con
 una página autorizada real, temporadas, resolución auditada de conflictos,

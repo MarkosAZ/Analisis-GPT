@@ -22,8 +22,9 @@ flowchart LR
 
 Foundation entrega contratos y mecanismos verificables. Fase 2 añade ingestión
 manual mediante extensión, RAW, normalización de calendario y tracking en
-PostgreSQL. Features deportivas, inferencia, recepción remota y publicación
-permanecen pendientes.
+PostgreSQL. Una petición posterior incorpora la web HTML de calendario y un
+exportador público de solo lectura. Features deportivas, inferencia y recepción
+remota permanecen pendientes; no se confunde la UI con un pipeline automatizado.
 
 ## Responsabilidades
 
@@ -35,7 +36,7 @@ permanecen pendientes.
 | PostgreSQL | Relaciones, estados, constraints, idempotencia, locks y permisos |
 | Registry/gobernanza | Vigencia de modelos/políticas, ventanas de evaluación y protección de holdout |
 | Actions futuro | Orquestar jobs observables, reintentables e idempotentes |
-| Publicación futura | Exportar exclusivamente contratos públicos versionados y desplegar Pages |
+| Publicación | Exportador `public_calendar_v1`, HTML estático y workflow Pages con assets explícitos; despliegue remoto por verificar |
 
 Las fuentes temporales pasan por `as_of(decision_time)` antes de convertirse en features. Los modelos no consultan tablas arbitrarias ni invocan providers directamente. El manifiesto de análisis liga RAW, versiones de adaptación/normalización/features, configuración, modelo, políticas y SHA.
 
@@ -71,7 +72,7 @@ Un reconciliador posterior detectará etapas sin heartbeat y marcará `FAILED_TI
 
 El código público puede contener el esquema de las apuestas reales y pruebas sintéticas de permisos. Sus credenciales de runtime no pueden leer ese esquema. Los datos reales, el workflow de registro y su exportación viven en el futuro repositorio privado. La interfaz pública nunca envía stakes/precios tomados a Actions públicos.
 
-El futuro frontend consume JSON estático; la sección privada, cuando exista, usa un token separado contra GitHub. La separación debe existir en SQL, workflows, almacenamiento y exportación, además de la interfaz visual.
+El frontend consume JSON estático; la sección privada, cuando exista, usará un token separado contra GitHub. La separación debe existir en SQL, workflows, almacenamiento y exportación, además de la interfaz visual. Actualmente no hay formulario de tokens ni sección privada.
 
 ## Evolución
 
@@ -91,3 +92,16 @@ No es un provider automático ni un scheduler remoto. Los locks transaccionales
 de este importador serializan escrituras breves; no sustituyen locks TTL/fencing
 cuando empiecen los análisis largos. R2 y la recepción remota son integraciones
 pendientes, no propiedades implícitas del adapter local.
+
+## Web de calendario
+
+`sports-capture export-calendar` obtiene una vista consistente del estado público
+mediante una consulta SQL. Conserva UUID y cadenas completas de ciclos; no incluye
+RAW, fuentes, cuotas ni apuestas. `scripts/build_site.py` valida el contrato y
+construye un directorio con una lista explícita de archivos. Pages publica ese
+directorio y no tiene conexión a PostgreSQL. El servidor de desarrollo usa la
+misma construcción en un directorio temporal aislado.
+
+Este snapshot refleja estados actuales, no un histórico de features `as_of`.
+La trazabilidad de predicciones seguirá su pipeline temporal independiente.
+Véanse [WEB.md](docs/WEB.md) y [ADR 0008](docs/decisions/0008-static-calendar-web.md).

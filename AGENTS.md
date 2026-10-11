@@ -3,7 +3,9 @@
 Lee `docs/PROJECT_SPEC.md`, `docs/IMPLEMENTATION_STATUS.md` y los ADRs antes de
 cambiar arquitectura. Foundation está terminada y Fase 2 está en curso; lee también
 `docs/BROWSER_CAPTURE.md` y ADR 0007. El usuario solicitó un provider mediante
-extensión manual. Continúa la fase actual, sin saltar a modelos o Pages.
+extensión manual y después una web HTML ejecutable. Lee también `docs/WEB.md` y
+ADR 0008: existe una vista estática de calendario, sin adelantar modelos, paper
+ni la sección privada. Continúa cerrando Fase 2.
 
 Trabaja en el checkout actual. Una tarea cloud ya está aislada: no crees otro
 worktree salvo petición explícita. Preserva cambios existentes del usuario.

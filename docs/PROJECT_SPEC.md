@@ -10,7 +10,7 @@ Construir un sistema de análisis deportivo **prepartido** para fútbol, básque
 
 La arquitectura prioriza point-in-time correctness, reproducibilidad, integridad histórica y separación entre predicciones, paper betting y apuestas reales. El repositorio principal es público. Las apuestas reales pertenecen a un futuro repositorio privado; no forman parte de los datos, logs, artifacts o workflows públicos.
 
-La implementación progresa por fases. **Esta iteración corresponde a Fase 1 — Foundation.** Su resultado es infraestructura verificable, no predicciones deportivas listas para usar. El historial conservado comienza con decisiones ya avanzadas; los detalles que no quedaron establecidos se registran como pendientes, sin atribuirles acuerdos inexistentes.
+La implementación progresa por fases. **Foundation está cerrada y Fase 2 está en curso.** Una petición posterior del usuario incorpora una web HTML de calendario, sin activar modelos ni paper. El historial conservado comienza con decisiones ya avanzadas; los detalles que no quedaron establecidos se registran como pendientes, sin atribuirles acuerdos inexistentes.
 
 ## Deportes y mercados
 
@@ -152,13 +152,13 @@ No secretos en código, logs, URIs persistidas o ejemplos; no DSN completos; no 
 
 ## GitHub Actions, observabilidad y frontend
 
-Foundation implementa únicamente CI: lint, formatter/check, type checking, tests y validación de migraciones/constraints con PostgreSQL temporal. Los workflows operativos futuros son `refresh_calendar`, `tracking_scheduler`, `capture_odds`, `analyze_selected`, `settle_events`, `train_models`, `backtest`, `publish_pages`, `reconcile_stale_runs` y, cuando corresponda, acceso manual privilegiado al holdout.
+Foundation aportó CI: lint, formatter/check, type checking, tests y validación de migraciones/constraints con PostgreSQL temporal. La iteración web añade `pages.yml` para construir/publicar assets públicos desde main, sin secretos. Los workflows operativos futuros son `refresh_calendar`, `tracking_scheduler`, `capture_odds`, `analyze_selected`, `settle_events`, `train_models`, `backtest`, `reconcile_stale_runs` y, cuando corresponda, acceso manual privilegiado al holdout. La publicación automática de nuevos snapshots desde el pipeline queda pendiente.
 
 Guardar GitHub run ID, attempt, trigger, SHA, tiempos y conclusión; slots llenos/vacíos/tardíos; calidad/frescura de datos; revisiones pendientes; deployments de Pages y `schema_version` de JSON. Los resúmenes de errores deben sanitizarse.
 
 Los cron de repositorios públicos pueden desactivarse tras 60 días sin actividad. Documentar supervisión/reactivación y recuperar el trabajo mediante operaciones idempotentes. No asumir que auto-commits evitan la desactivación, ni fabricar el historial de cuotas perdido.
 
-Pages tendrá Partidos, Análisis, Historial, Mis apuestas y Laboratorio, con interacción sobre datos estáticos optimizados. El sitio y sus manifests deben permitir seguir una predicción hasta su modelo, política, run, ciclo e inputs públicos autorizados. No hay frontend funcional en Foundation.
+Pages tendrá Partidos, Análisis, Historial, Mis apuestas y Laboratorio, con interacción sobre datos estáticos optimizados. El sitio y sus manifests deben permitir seguir una predicción hasta su modelo, política, run, ciclo e inputs públicos autorizados. La web actual solo implementa Partidos, Seguimiento, Historial de ciclos y una guía de Extensión. Las vistas de análisis, evaluación, laboratorio y apuestas privadas siguen pendientes de sus fases.
 
 ## Fases y criterios de cierre
 
@@ -199,11 +199,26 @@ prepartido crea sucesor y requiere selección explícita. FINISHED en calendario
 no equivale a resultado confirmado ni liquidación. Capturas de odds se archivan
 ahora por petición expresa; su integración operativa continúa en Fase 3.
 
-La herramienta de captura no adelanta el sitio público de Pages. Tampoco es una
-fuente cron en servidor: refresh/scheduler remotos quedan pendientes de acceso
+La herramienta de captura es independiente de la web HTML solicitada después.
+No es una fuente cron en servidor: refresh/scheduler remotos quedan pendientes de acceso
 autorizado ejecutable o recepción autenticada con persistencia. No se fabrican
 capturas históricas durante huecos. Véanse [ADR 0007](decisions/0007-browser-capture-provider.md)
 y [BROWSER_CAPTURE.md](BROWSER_CAPTURE.md).
+
+## Decisión posterior: web HTML ejecutable
+
+El usuario pidió ejecutar una página HTML del proyecto dentro del repositorio.
+Se incorpora `index.html` y una vista estática de los datos públicos disponibles,
+con filtros, fechas America/Lima y trazabilidad de reprogramaciones por ciclo.
+El calendario inicial está vacío; el ejemplo sintético solo se abre expresamente.
+El navegador admite `public_calendar_v1` en memoria, sin subir datos ni conectarse
+a PostgreSQL. La exportación de solo lectura y el build aplican campos y rutas
+explícitos; el HTML original de contexto nunca es un asset.
+
+El snapshot muestra estado operacional actual, no información histórica `as_of`
+ni predicciones. No satisface por sí solo Fase 2 ni toda Fase 7. Se preservan los
+criterios de las fases posteriores. Véanse [WEB.md](WEB.md) y
+[ADR 0008](decisions/0008-static-calendar-web.md).
 
 ## Decisiones todavía abiertas
 

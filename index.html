@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
+  <meta name="description" content="Calendario deportivo, seguimiento e historial de ciclos de Analisis-GPT.">
+  <title>Analisis-GPT · Observatorio deportivo</title>
+  <link rel="icon" href="web/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="web/styles.css">
+  <script src="web/app.mjs" type="module"></script>
+</head>
+<body>
+  <a class="skip-link" href="#content">Saltar al contenido</a>
+  <aside class="sidebar">
+    <a class="brand" href="#partidos"><span class="brand-mark" aria-hidden="true">A<span>·</span></span><span>ANALISIS<span class="brand-light">GPT / SPORTS LAB</span></span></a>
+    <p class="nav-label">TU OBSERVATORIO</p>
+    <nav aria-label="Principal">
+      <a href="#partidos" data-view="partidos" aria-current="page"><span aria-hidden="true">01</span> Partidos</a>
+      <a href="#seguimiento" data-view="seguimiento"><span aria-hidden="true">02</span> Seguimiento</a>
+      <a href="#historial" data-view="historial"><span aria-hidden="true">03</span> Historial</a>
+      <a href="#extension" data-view="extension"><span aria-hidden="true">04</span> Extensión <span class="nav-tag">LOCAL</span></a>
+    </nav>
+    <div class="sidebar-bottom"><span class="status-dot"></span> Datos con procedencia<p>Fútbol · Baloncesto · Béisbol</p><a href="https://github.com/MarkosAZ/Analisis-GPT" target="_blank" rel="noopener noreferrer">Ver proyecto en GitHub <span aria-hidden="true">↗</span></a></div>
+  </aside>
+  <div class="workspace">
+    <header class="topbar"><p>SPORTS INTELLIGENCE <span>/</span> <span id="breadcrumb">Partidos</span></p><div class="zone"><span class="status-dot"></span> Hora de Lima <span class="offset">UTC−5</span></div></header>
+    <main id="content">
+      <div class="page-heading"><div><p class="eyebrow">EL PARTIDO EMPIEZA CON LOS DATOS</p><h1 id="title">Tu próxima lectura<br>del juego.</h1><p id="subtitle" class="subtitle">Consulta el calendario y sigue cada cambio de programación.</p></div><div class="heading-actions"><button id="load-file" class="button secondary" type="button">Cargar calendario</button><input id="snapshot-file" type="file" accept="application/json,.json" hidden><button id="demo" class="button primary" type="button">Explorar ejemplo <span aria-hidden="true">→</span></button></div></div>
+      <div id="message" class="message" role="status" aria-live="polite">Cargando calendario público…</div>
+      <div id="demo-banner" class="demo-banner" hidden><div><strong>Estás viendo un ejemplo</strong><span>Partidos ficticios para explorar la interfaz. Sin predicciones ni apuestas.</span></div><button id="live" type="button">Volver a datos publicados</button></div>
+      <section id="calendar-view" aria-label="Calendario y seguimiento">
+        <div class="metrics">
+          <article><p>PARTIDOS EN CALENDARIO</p><div><strong id="metric-events">—</strong><span>encuentros únicos</span></div></article>
+          <article><p>EN SEGUIMIENTO</p><div><strong id="metric-tracking">—</strong><span>ciclos seleccionados</span></div></article>
+          <article><p>CAMBIOS DE PROGRAMACIÓN</p><div><strong id="metric-changes">—</strong><span>ciclos reprogramados</span></div></article>
+          <article class="publication"><p>ÚLTIMA PUBLICACIÓN</p><strong id="metric-updated">Sin datos</strong><span>Disponibilidad del calendario</span></article>
+        </div>
+        <section class="board" aria-labelledby="board-title">
+          <div class="board-header"><div><p class="eyebrow">EXPLORA EL CALENDARIO</p><h2 id="board-title">Todos los partidos</h2></div><p id="result-count" class="muted"></p></div>
+          <div class="filters">
+            <div class="sport-tabs" role="group" aria-label="Filtrar deporte"><button type="button" data-sport="ALL" aria-pressed="true">Todos</button><button type="button" data-sport="FOOTBALL" aria-pressed="false">Fútbol</button><button type="button" data-sport="BASKETBALL" aria-pressed="false">Baloncesto</button><button type="button" data-sport="BASEBALL" aria-pressed="false">Béisbol</button></div>
+            <div class="filter-fields"><label><span class="sr-only">Buscar equipo o competición</span><input id="search" type="search" placeholder="Buscar equipo o competición…" maxlength="100"></label><label><span class="sr-only">Filtrar fecha</span><select id="date-filter"><option value="ALL">Todas las fechas</option><option value="TODAY">Hoy en Lima</option><option value="TOMORROW">Mañana en Lima</option></select></label></div>
+          </div>
+          <div id="event-list" class="event-list"></div>
+          <div id="empty" class="empty" hidden><div class="empty-mark" aria-hidden="true">A<span>·</span></div><h3 id="empty-title">Tu calendario empieza aquí</h3><p id="empty-copy">Todavía no se han publicado partidos. Explora un ejemplo o carga un calendario público exportado desde el proyecto.</p><button id="empty-demo" class="button secondary" type="button">Ver calendario de ejemplo</button></div>
+        </section>
+        <div class="bottom-notes"><div><span class="small-number">01 /</span><h3>Una historia por encuentro</h3><p>Los aplazamientos conservan la programación anterior. Abre un partido para recorrer sus ciclos.</p></div><div><span class="small-number">02 /</span><h3>Seguimiento transparente</h3><p>Los estados reflejan la última publicación. La captura de información se realiza mediante la extensión.</p></div><div><span class="small-number">03 /</span><h3>Construido con evidencia</h3><p>Las predicciones y el track record aparecerán cuando existan modelos y evaluaciones validados.</p></div></div>
+      </section>
+      <section id="extension-view" hidden aria-labelledby="extension-title">
+        <div class="extension-hero"><div class="extension-visual" aria-hidden="true"><div class="mini-tab"><i></i><i></i><i></i><span>Tu fuente deportiva</span></div><div class="mini-content"><div class="mini-match"><span>CALENDARIO / CUOTAS</span><strong>Elige un dato.<br>Conserva su contexto.</strong><div class="mini-price">1.90 <span>Texto seleccionado</span></div></div><div class="mini-panel"><b>A·</b><span>Revisa</span><span>Confirma</span><span>Exporta</span></div></div></div><div class="extension-copy"><p class="eyebrow">DEL NAVEGADOR AL CALENDARIO</p><h2 id="extension-title">Captura con intención.</h2><p>Abre una web deportiva en una pestaña y selecciona sus datos públicos desde el panel lateral. Tú revisas cada captura antes de guardarla.</p><a class="button primary" href="downloads/sports-capture-extension.zip" download>Descargar extensión ZIP</a><p class="muted">Chrome y Edge · Instalación local · Sin claves en el navegador</p></div></div>
+        <div class="install-steps"><article><span>01</span><h3>Carga la extensión</h3><p>Descomprime el ZIP. En la página de extensiones de Chrome o Edge activa el modo desarrollador y elige «Cargar descomprimida».</p></article><article><span>02</span><h3>Selecciona y revisa</h3><p>Abre una fuente que tengas permiso de consultar. Pulsa el icono de la extensión, vincula la pestaña y elige datos de un partido o mercado.</p></article><article><span>03</span><h3>Importa al proyecto</h3><p>Descarga el JSON revisado e impórtalo con la herramienta del proyecto. El calendario se publica después de confirmar las identidades.</p><a href="https://github.com/MarkosAZ/Analisis-GPT/blob/main/docs/BROWSER_CAPTURE.md" target="_blank" rel="noopener noreferrer">Guía de importación →</a></article></div>
+      </section>
+      <footer><span>ANALISIS GPT <span class="footer-dot">/</span> Observatorio deportivo</span><span>Calendario público · America/Lima</span></footer>
+    </main>
+  </div>
+  <dialog id="detail" aria-labelledby="detail-title"><div class="dialog-top"><p class="eyebrow">HISTORIA DEL ENCUENTRO</p><button id="close-detail" type="button" aria-label="Cerrar detalle">Cerrar ×</button></div><h2 id="detail-title"></h2><p id="detail-competition" class="muted"></p><div id="cycle-history"></div><p class="detail-note">Cada ciclo conserva su identidad. Una reprogramación no traslada las predicciones del ciclo anterior.</p></dialog>
+  <noscript><p class="noscript">Activa JavaScript para consultar el calendario y sus filtros.</p></noscript>
+</body>
+</html>
