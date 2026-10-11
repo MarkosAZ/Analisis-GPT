@@ -10,7 +10,8 @@ ni la sección privada. Continúa cerrando Fase 2.
 La petición posterior exige automatización desde la web: consulta
 `docs/AUTOMATIC_SCANNING.md` y ADR 0009. La extensión 0.3 recorre perfiles DOM
 autorizados; conserva el modo manual. Las cinco fuentes elegidas están catalogadas,
-pero sus lectores reales NO están verificados porque la red cloud devuelve 403.
+pero sus lectores específicos NO están implementados: la red cloud impidió
+inspeccionar las páginas con un 403 de túnel.
 No presentes el botón que abre las fuentes como extracción de cuotas ya operativa.
 
 Trabaja en el checkout actual. Una tarea cloud ya está aislada: no crees otro

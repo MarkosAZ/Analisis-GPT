@@ -53,7 +53,7 @@ Estos estados corresponden a mecanismos Foundation. No equivalen a providers rea
 | Redes/embeddings/contexto/consenso | PLANIFICADO PARA UNA FASE POSTERIOR | Fase 6; promoción solo tras mejora fuera de muestra |
 | Workflow manual privilegiado de holdout | PLANIFICADO PARA UNA FASE POSTERIOR | Administración separada y auditoría |
 | R2/Neon reales y backups privados | PLANIFICADO PARA UNA FASE POSTERIOR | Configuración, credenciales y pruebas de conectividad |
-| JSON públicos y Pages | IMPLEMENTADO PARCIALMENTE | Web de calendario, contrato público, CSP y build local/remoto aprobado; despliegue bloqueado por configuración de Pages; vistas de análisis/evaluación en sus fases |
+| JSON públicos y Pages | IMPLEMENTADO PARCIALMENTE | Web de calendario y extensión, contrato público, CSP y despliegue Pages aprobado; actualización de datos y vistas de análisis/evaluación pendientes |
 | Repositorio privado, tokens y apuestas reales | PLANIFICADO PARA UNA FASE POSTERIOR | Proyecto separado; nunca workflows públicos |
 | Monitoreo de cron desactivado y recuperación tras huecos | PLANIFICADO PARA UNA FASE POSTERIOR | Antes del primer workflow programado operativo |
 
@@ -113,7 +113,9 @@ tracking e historial de ciclos, exportación pública SQL, validación estricta,
 servidor aislado y workflow Pages. No añade migraciones ni modelos. El alcance,
 validaciones y límites están en [ITERATION_03_REPORT.md](ITERATION_03_REPORT.md) y
 la operación en [WEB.md](WEB.md). GitHub construyó el artifact público; el despliegue
-falló al consultar el sitio Pages no habilitado/configurado (Not Found).
+inicial falló al consultar el sitio Pages no habilitado/configurado (Not Found).
+Ese bloqueo quedó resuelto: el despliegue de la iteración 04 se completó en
+[GitHub Actions](https://github.com/MarkosAZ/Analisis-GPT/actions/runs/38119333217).
 
 Completar **Calendario + providers + tracking**: aceptación de la extensión con
 una página autorizada real, temporadas, resolución auditada de conflictos,
@@ -131,4 +133,4 @@ Criterios verificables para Fase 2:
 6. Incorporar `refresh_calendar` y `tracking_scheduler` seguros, locks/TTL, observabilidad de slots y procedimiento de reactivación tras inactividad.
 7. Probar el circuito con datos sintéticos y después una fuente autorizada; conservar el límite de Foundation sobre secretos y publicación.
 
-El resto de los workflows se incorpora cuando exista su fase. No hay migraciones ejecutadas en producción, apuesta real, política paper activa, modelo entrenado, bucket R2 conectado ni sitio Pages desplegado por esta iteración.
+El resto de los workflows se incorpora cuando exista su fase. No hay migraciones ejecutadas en producción, apuesta real, política paper activa, modelo entrenado ni bucket R2 conectado. El sitio Pages está desplegado, con calendario inicial vacío y ejemplo explícito.

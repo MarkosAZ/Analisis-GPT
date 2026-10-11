@@ -1,6 +1,6 @@
 # ADR 0008 — Web estática de calendario por petición posterior
 
-Estado: aceptada e implementada; build local/remoto verificado, despliegue pendiente de habilitar Pages.
+Estado: aceptada e implementada; build y despliegue remoto verificados durante la iteración 04.
 
 ## Contexto
 

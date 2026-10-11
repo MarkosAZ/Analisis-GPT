@@ -85,15 +85,17 @@ Un administrador debe configurar una vez **Settings → Pages → Build and depl
 un PAT ni secretos de base de datos; el GITHUB_TOKEN ordinario no puede habilitar
 por sí solo un sitio Pages sin configurar.
 
-Dirección prevista: `https://markosaz.github.io/Analisis-GPT/`. Confirma el enlace
-real y el éxito en el environment `github-pages`. El [primer workflow remoto](https://github.com/MarkosAZ/Analisis-GPT/actions/runs/38103689223)
-construyó el sitio y generó el artifact, pero `configure-pages` falló con **Not Found**:
-el sitio debe estar habilitado y configurado para GitHub Actions. Completa el paso
-administrativo anterior y vuelve a ejecutar el workflow.
+La dirección publicada es https://markosaz.github.io/Analisis-GPT/. El [despliegue
+de la versión 0.3](https://github.com/MarkosAZ/Analisis-GPT/actions/runs/38119333217)
+terminó correctamente. El [primer workflow remoto](https://github.com/MarkosAZ/Analisis-GPT/actions/runs/38103689223)
+había generado el artifact, pero `configure-pages` falló con **Not Found** porque
+Pages no estaba habilitado. Ese bloqueo quedó resuelto; el paso administrativo
+anterior solo se necesita en una instalación nueva que aún no tenga Pages activo.
 
 La página pública de Actions permitió comprobar ese resultado. La red del cloud
 rechazó con HTTP 403 tanto `api.github.com` como el dominio del sitio, de modo que
-no se pudo configurar Pages ni abrir su dirección desde esta sesión. La ejecución
+no se pudo configurar Pages ni abrir su dirección directamente desde esta sesión.
+El resultado de publicación se verificó en Actions. La ejecución
 HTTP y las pruebas locales de la web sí se completaron.
 
 ## Validación y límites

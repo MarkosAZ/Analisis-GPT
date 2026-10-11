@@ -36,7 +36,7 @@ remota permanecen pendientes; no se confunde la UI con un pipeline automatizado.
 | PostgreSQL | Relaciones, estados, constraints, idempotencia, locks y permisos |
 | Registry/gobernanza | Vigencia de modelos/políticas, ventanas de evaluación y protección de holdout |
 | Actions futuro | Orquestar jobs observables, reintentables e idempotentes |
-| Publicación | Exportador `public_calendar_v1`, HTML estático y build Pages local/remoto comprobado; despliegue bloqueado por habilitación de Pages |
+| Publicación | Exportador `public_calendar_v1`, HTML estático y build/despliegue Pages comprobados; publicación automática de nuevos datos pendiente |
 
 Las fuentes temporales pasan por `as_of(decision_time)` antes de convertirse en features. Los modelos no consultan tablas arbitrarias ni invocan providers directamente. El manifiesto de análisis liga RAW, versiones de adaptación/normalización/features, configuración, modelo, políticas y SHA.
 

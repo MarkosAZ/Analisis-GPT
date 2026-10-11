@@ -9,11 +9,11 @@ seleccionar cada dato en cada ejecución. El modo manual 0.2 sigue compatible.
 
 | Fuente | Entrada pública | Lector real |
 | --- | --- | --- |
-| SofaScore | https://www.sofascore.com/ | Pendiente de verificar |
-| Betano Perú | https://www.betano.pe/ | Pendiente de verificar |
-| Apuesta Total | https://www.apuestatotal.com/apuestas-deportivas/ | Pendiente de verificar |
-| Te Apuesto | https://www.teapuesto.pe/sport | Pendiente de verificar |
-| Flashscore Perú | https://www.flashscore.pe/ | Pendiente de verificar |
+| SofaScore | https://www.sofascore.com/ | No implementado |
+| Betano Perú | https://www.betano.pe/ | No implementado |
+| Apuesta Total | https://www.apuestatotal.com/apuestas-deportivas/ | No implementado |
+| Te Apuesto | https://www.teapuesto.pe/sport | No implementado |
+| Flashscore Perú | https://www.flashscore.pe/ | No implementado |
 
 La red cloud rechazó las cinco conexiones con **403 en el túnel**, antes de
 obtener HTML. No es evidencia de un rechazo de esas webs a su usuario. Se guardaron
@@ -22,7 +22,7 @@ sus reglas anteriores. Ese guardado no modifica el runtime: requiere guardar y
 publicar el entorno para inspeccionar las páginas y terminar sus lectores.
 
 **Abrir las cinco fuentes** abre esas URLs automáticamente. No se presenta como
-una extracción: los selectores de esas páginas todavía no están verificados.
+una extracción: los lectores específicos de esas páginas todavía no existen.
 **Iniciar escaneo** funciona con perfiles DOM válidos configurados; permanece
 deshabilitado si no existen o faltan permisos. No se incluyen selectores supuestos,
 endpoints internos ni un perfil sintético activado como si fuese una fuente real.

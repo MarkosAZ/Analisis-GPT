@@ -41,6 +41,8 @@ No se inventaron selectores ni se presentaron portadas abiertas como cuotas leí
 | Actionlint | Workflows válidos; no se agregaron workflows |
 | Build Python y sitio estático | Aprobados; ZIP 0.3.0 con assets explícitos |
 | Web local real | HTTP 200, ZIP comprobado, escritorio/móvil sin errores JS ni overflow |
+| CI remoto | [Foundation CI aprobado](https://github.com/MarkosAZ/Analisis-GPT/actions/runs/38119333164) para a6b7793 |
+| Pages remoto | Build y deploy aprobados para a6b7793; bloqueo de habilitación anterior resuelto |
 
 Las pruebas usan DOM y UI Chromium reales, con APIs Chrome simuladas; no prueban
 instalación MV3 ni permisos en el navegador del usuario. La política administrada
@@ -81,8 +83,8 @@ sin lector. El motor no omite esa condición ni evade controles.
 Después continúa el cierre de Fase 2: temporadas, resolución de conflictos,
 Neon/R2, recepción/fuente de servidor y workflows operativos. Normalización de
 odds/Parquet, modelos, paper, evaluación, ML y parte privada siguen pendientes,
-como registra IMPLEMENTATION_STATUS.md. La publicación remota de Pages conserva
-su requisito de habilitación en la configuración de GitHub.
+como registra IMPLEMENTATION_STATUS.md. El [despliegue remoto de Pages](https://github.com/MarkosAZ/Analisis-GPT/actions/runs/38119333217)
+terminó correctamente y publica la versión 0.3 en https://markosaz.github.io/Analisis-GPT/.
 
 ## Archivos creados
 
