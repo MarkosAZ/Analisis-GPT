@@ -21,6 +21,12 @@ las fechas se muestran en America/Lima. Partidos usa el ciclo más reciente de
 cada evento; Historial conserva los anteriores. La sección Extensión ofrece una
 guía y un ZIP generado exclusivamente con sus assets.
 
+La sección Extensión también detecta la versión 0.3, permite abrir las cinco
+fuentes elegidas e iniciar/cancelar un recorrido automático con perfiles válidos.
+Muestra progreso y permite descargar el lote local. No modifica automáticamente
+el calendario publicado. Consulta [AUTOMATIC_SCANNING.md](AUTOMATIC_SCANNING.md)
+para los lectores aún pendientes y el circuito de importación.
+
 El calendario publicado empieza vacío. **Explorar ejemplo** carga cinco eventos
 ficticios, incluyendo un aplazamiento con dos ciclos, con aviso visible. No son
 capturas reales ni predicciones. No hay modelos, ROI, recomendaciones ni apuestas.

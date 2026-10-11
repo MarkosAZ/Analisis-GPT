@@ -32,4 +32,6 @@ build/
 *.egg-info/
 # Local exports from the browser are data, never application assets.
 sports-capture-*.json
+sports-scan-*.json
+scan-profiles*.json
 node_modules/

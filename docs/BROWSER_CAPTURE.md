@@ -1,5 +1,10 @@
 # Captura manual, calendario y seguimiento
 
+Este documento conserva el recorrido manual compatible. La extensión también
+incorpora [escaneo automático](AUTOMATIC_SCANNING.md), solicitado después, con
+capturas `browser_capture_v2` y lotes `browser_scan_v1`. El comando
+`sports-capture import-scan` conserva el mismo pipeline y las mismas fronteras SQL.
+
 Esta iteración incorpora la extensión solicitada como provider manual de Fase 2.
 La [guía de la extensión](../extension/README.md) explica instalación, navegación,
 selección y exportación. No requiere credenciales en el navegador.
@@ -108,8 +113,9 @@ No se crean analysis runs ficticios para usar los locks TTL de predicciones.
 - Temporada queda `NULL`: el formulario v1 no proporciona fechas/identidad de
   temporada y no se inventan. Las zonas de fechas son explícitas; presentación
   operativa America/Lima, sin afirmar que sea la zona del estadio.
-- No hay recolección en segundo plano, R2 conectado, extracción desde iframes,
-  selectores específicos de SofaScore/Betano ni una API remota autenticada.
+- El modo manual no recolecta en segundo plano; el nuevo motor automático abre
+  pestañas para un recorrido explícito. No hay R2 conectado, extracción desde
+  iframes, lectores verificados de SofaScore/Betano ni API remota autenticada.
 
 `tracking.json` es una lista pública versionada de ciclos seleccionados y estados;
 no contiene RAW, origen, tokens, URLs, apuestas, cuotas tomadas o stakes. Es un

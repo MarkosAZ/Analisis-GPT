@@ -7,6 +7,12 @@ extensión manual y después una web HTML ejecutable. Lee también `docs/WEB.md`
 ADR 0008: existe una vista estática de calendario, sin adelantar modelos, paper
 ni la sección privada. Continúa cerrando Fase 2.
 
+La petición posterior exige automatización desde la web: consulta
+`docs/AUTOMATIC_SCANNING.md` y ADR 0009. La extensión 0.3 recorre perfiles DOM
+autorizados; conserva el modo manual. Las cinco fuentes elegidas están catalogadas,
+pero sus lectores reales NO están verificados porque la red cloud devuelve 403.
+No presentes el botón que abre las fuentes como extracción de cuotas ya operativa.
+
 Trabaja en el checkout actual. Una tarea cloud ya está aislada: no crees otro
 worktree salvo petición explícita. Preserva cambios existentes del usuario.
 

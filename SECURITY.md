@@ -46,8 +46,11 @@ No se implementa ese repositorio ni captura de tokens en este incremento. Un PAT
 
 ## Extensión de captura pública
 
-El manifest solicita solo `activeTab`, `scripting` y `sidePanel`, sin hosts
-permanentes. No recoge cookies, credenciales o tráfico ni sube datos. La CSP
+El manifest solicita `activeTab`, `scripting`, `sidePanel` y `storage`. Declara
+hosts HTTPS opcionales: solo los sitios de perfiles aprobados reciben permisos
+tras el diálogo del navegador. El script de conexión se instala únicamente en
+el sitio del proyecto y desarrollo local; comprueba origen, ruta, puerto y frame.
+No recoge cookies, credenciales o tráfico ni sube datos. La CSP
 prohíbe conexiones y marcos; scripts y estilos son locales. El selector se activa
 por el usuario, usa una capa que evita pulsar el botón original, caduca y rechaza
 formularios/boletas conocidos. No es una garantía sobre cualquier DOM hostil:
@@ -57,7 +60,20 @@ El importador limita el tamaño a 16 KiB, exige campos exactos y decimales váli
 rechaza campos privados/fechas inválidas y no imprime excepciones del driver.
 Solo persiste origen HTTPS, nunca ruta/query ni HTML completo. Las capturas
 `sports-capture-*.json` están ignoradas y el scanner las rechaza incluso si se
-añadiesen forzosamente. El ZIP usa una lista fija de ocho assets de la extensión.
+añadiesen forzosamente. El ZIP usa una lista fija de assets de la extensión.
+
+La web solo emite comandos acotados; no puede enviar URLs, perfiles ni scripts
+para ejecutar. Solo la página interna de configuración puede guardar perfiles.
+El motor lee campos DOM visibles y únicos, sin clics, formularios, scripts de
+terceros ni interceptación de red. Rechaza redirecciones, login/CAPTCHA detectados,
+campos sensibles conocidos y resultados ambiguos. Estos controles no certifican
+un DOM arbitrario: cada lector real necesita validación y autorización de fuente.
+
+Los perfiles viven en `storage.local` de la extensión; capturas/estado en
+`storage.session`, restringidos a contextos confiables. No contienen credenciales.
+Las exportaciones automáticas y perfiles locales se ignoran y el scanner público
+los rechaza. El límite del lote es 4 MiB/200 capturas; se valida entero antes de
+importar miembros. No se adjunta HTML de fuente ni contenido de cuentas.
 
 Las credenciales PostgreSQL viven únicamente en el entorno del importador. Los
 roles públicos conservan la denegación sobre `private_betting`. Este incremento

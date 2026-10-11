@@ -1,10 +1,18 @@
 {
   "manifest_version": 3,
   "name": "Análisis GPT · Captura deportiva",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "minimum_chrome_version": "116",
-  "description": "Panel lateral para revisar y exportar datos deportivos públicos seleccionados por ti.",
-  "permissions": ["activeTab", "scripting", "sidePanel"],
+  "description": "Escaneo deportivo desde Analisis-GPT con fuentes autorizadas y captura manual opcional.",
+  "permissions": ["activeTab", "scripting", "sidePanel", "storage"],
+  "optional_host_permissions": ["https://*/*"],
+  "options_page": "scan.html",
+  "content_scripts": [{
+    "matches": ["https://markosaz.github.io/Analisis-GPT/*", "http://127.0.0.1/*", "http://localhost/*"],
+    "js": ["bridge.js"],
+    "run_at": "document_start",
+    "all_frames": false
+  }],
   "action": {"default_title": "Abrir captura deportiva"},
   "background": {"service_worker": "background.js", "type": "module"},
   "side_panel": {"default_path": "panel.html"},

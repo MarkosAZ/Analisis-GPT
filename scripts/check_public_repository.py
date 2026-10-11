@@ -29,6 +29,7 @@ def main() -> int:
             "Analizar mercados deportivos" in name
             or path.name.startswith("real_bets")
             or (path.name.startswith("sports-capture-") and path.suffix == ".json")
+            or (path.name.startswith(("sports-scan-", "scan-profiles")) and path.suffix == ".json")
             or path.suffix in {".dump", ".backup", ".pem", ".key"}
             or (path.name.startswith(".env") and path.name != ".env.example")
         ):

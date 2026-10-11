@@ -1,4 +1,4 @@
-"""Strict manual capture boundary; page HTML, account data and arbitrary keys are rejected."""
+"""Strict browser capture boundary; page HTML and private fields are rejected."""
 
 from __future__ import annotations
 
@@ -16,11 +16,13 @@ from sports_analysis.domain.markets import LineType, MarketLine
 from sports_analysis.domain.temporal import AvailableAtSource, TemporalRecord, utc
 from sports_analysis.providers.base import ProviderRequest, RawResponse
 from sports_analysis.storage.objects import ObjectStore, sha256
-from sports_analysis.storage.raw import StoredRawCapture, load_raw
+from sports_analysis.storage.raw import StoredRawCapture, canonical_json, load_raw
 
 MAX_CAPTURE_BYTES = 16_384
 SCHEMA = "browser_capture_v1"
+AUTO_SCHEMA = "browser_capture_v2"
 NORMALIZER = "browser_normalizer_v1"
+MAX_SCAN_BYTES = 4 * 1024 * 1024
 _COMMON = {"event_id", "sport"}
 _CALENDAR = {
     "competition_id",
@@ -114,6 +116,23 @@ class BrowserCapture:
     source_origin: str
     kind: str
     record: CalendarRecord | OddsRecord
+    scan_id: UUID | None = None
+    reader_version: str | None = None
+    profile_id: str | None = None
+    profile_version: str | None = None
+    profile_hash: str | None = None
+
+    @property
+    def schema_version(self) -> str:
+        return AUTO_SCHEMA if self.scan_id else SCHEMA
+
+    @property
+    def capture_method(self) -> str:
+        return "AUTOMATIC_DOM" if self.scan_id else "MANUAL_REVIEW"
+
+    @property
+    def normalizer_version(self) -> str:
+        return "browser_normalizer_v2" if self.scan_id else NORMALIZER
 
     @property
     def provider_code(self) -> str:
@@ -126,8 +145,10 @@ def parse_capture(payload: bytes) -> BrowserCapture:
     if not isinstance(payload, bytes) or len(payload) > MAX_CAPTURE_BYTES:
         raise CaptureError("Capture exceeds the public schema size limit")
     try:
-        data = _keys(
-            json.loads(payload, object_pairs_hook=_unique_pairs),
+        data = json.loads(payload, object_pairs_hook=_unique_pairs)
+        automatic = isinstance(data, dict) and data.get("schema_version") == AUTO_SCHEMA
+        _keys(
+            data,
             {
                 "schema_version",
                 "capture_id",
@@ -136,10 +157,31 @@ def parse_capture(payload: bytes) -> BrowserCapture:
                 "source_origin",
                 "kind",
                 "record",
-            },
+            }
+            | (
+                {"scan_id", "reader_version", "profile_id", "profile_version", "profile_hash"}
+                if automatic
+                else set()
+            ),
         )
-        if data["schema_version"] != SCHEMA or data["capture_method"] != "MANUAL_REVIEW":
-            raise CaptureError("Unsupported manual capture schema")
+        if (data["schema_version"], data["capture_method"]) not in {
+            (SCHEMA, "MANUAL_REVIEW"),
+            (AUTO_SCHEMA, "AUTOMATIC_DOM"),
+        }:
+            raise CaptureError("Unsupported browser capture schema")
+        scan_id = None
+        if automatic:
+            scan_id = UUID(data["scan_id"])
+            if scan_id.version != 4 or str(scan_id) != data["scan_id"]:
+                raise CaptureError("Invalid scan identity")
+            if data["reader_version"] != "dom_fields_v1":
+                raise CaptureError("Unsupported browser reader")
+            public_text(data["profile_id"], identifier=True)
+            public_text(data["profile_version"], identifier=True)
+            if not isinstance(data["profile_hash"], str) or not re.fullmatch(
+                r"[a-f0-9]{64}", data["profile_hash"]
+            ):
+                raise CaptureError("Invalid profile hash")
         identity = UUID(data["capture_id"])
         if identity.version != 4 or str(identity) != data["capture_id"]:
             raise CaptureError("Capture identity must be a canonical UUID v4")
@@ -232,7 +274,18 @@ def parse_capture(payload: bytes) -> BrowserCapture:
                 line,
                 tuple(outcomes),
             )
-        return BrowserCapture(identity, captured_at, origin, kind, record)
+        return BrowserCapture(
+            identity,
+            captured_at,
+            origin,
+            kind,
+            record,
+            scan_id,
+            data.get("reader_version"),
+            data.get("profile_id"),
+            data.get("profile_version"),
+            data.get("profile_hash"),
+        )
     except (ValueError, TypeError, KeyError, AttributeError, RecursionError, OverflowError):
         raise CaptureError("Invalid public browser capture; review the schema and fields") from None
 
@@ -246,8 +299,8 @@ def raw_response(payload: bytes, received_at: datetime) -> RawResponse:
         capture.provider_code,
         ProviderRequest("browser/import"),
         received,
-        "browser_extension_v1",
-        SCHEMA,
+        capture.reader_version or "browser_extension_v1",
+        capture.schema_version,
         payload,
     )
 
@@ -261,7 +314,8 @@ def normalize_capture(
         capture.capture_id != raw.capture_id
         or response.provider != capture.provider_code
         or capture.captured_at > response.fetched_at
-        or response.schema_version != SCHEMA
+        or response.schema_version != capture.schema_version
+        or response.adapter_version != (capture.reader_version or "browser_extension_v1")
     ):
         raise CaptureError("RAW provenance does not match the capture")
     return TemporalRecord(
@@ -272,3 +326,44 @@ def normalize_capture(
         available_at=response.fetched_at,
         available_at_source=AvailableAtSource.OBSERVED,
     )
+
+
+def parse_scan(payload: bytes) -> tuple[bytes, ...]:
+    """Validate the whole batch first; deterministic member bytes make retries safe."""
+    if not isinstance(payload, bytes) or len(payload) > MAX_SCAN_BYTES:
+        raise CaptureError("Scan exceeds the size limit")
+    try:
+        data = _keys(
+            json.loads(payload, object_pairs_hook=_unique_pairs),
+            {"schema_version", "scan_id", "started_at", "finished_at", "status", "captures"},
+        )
+        scan_id = UUID(data["scan_id"])
+        if (
+            data["schema_version"] != "browser_scan_v1"
+            or scan_id.version != 4
+            or str(scan_id) != data["scan_id"]
+            or data["status"]
+            not in {"COMPLETED", "COMPLETED_WITH_ERRORS", "CANCELLED", "INTERRUPTED"}
+            or not isinstance(data["captures"], list)
+            or len(data["captures"]) > 200
+        ):
+            raise CaptureError("Invalid scan envelope")
+        start, finish = _timestamp(data["started_at"]), _timestamp(data["finished_at"])
+        if finish < start:
+            raise CaptureError("Invalid scan interval")
+        captures = []
+        ids = set()
+        for record in data["captures"]:
+            raw = canonical_json(record)
+            capture = parse_capture(raw)
+            if (
+                capture.scan_id != scan_id
+                or not start <= capture.captured_at <= finish
+                or capture.capture_id in ids
+            ):
+                raise CaptureError("Invalid scan membership")
+            ids.add(capture.capture_id)
+            captures.append(raw)
+        return tuple(captures)
+    except (ValueError, TypeError, KeyError, AttributeError, RecursionError, OverflowError):
+        raise CaptureError("Invalid public browser scan") from None

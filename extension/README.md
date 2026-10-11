@@ -1,7 +1,7 @@
-# Captura deportiva — extensión local
+# Captura y escaneo deportivo — extensión local 0.3
 
 Extensión Manifest V3 para Chrome 116+ y Edge compatible con `sidePanel`.
-Consulta la web en su pestaña y prepara los datos desde el panel lateral.
+Inicia el escaneo desde la web de Analisis-GPT. El panel lateral conserva la captura manual como alternativa.
 No incrusta webs en iframes: respeta sus restricciones de navegación y framing.
 
 ## Instalar
@@ -16,7 +16,24 @@ No incrusta webs en iframes: respeta sus restricciones de navegación y framing.
 Es una instalación local, no una publicación en Chrome Web Store. No necesita
 claves, cuenta propia ni servidor. Firefox todavía no está soportado.
 
-## Capturar
+## Escaneo automático
+
+1. Actualiza la extensión y recarga la web de Analisis-GPT.
+2. En la sección Extensión pulsa **Configurar fuentes**, carga perfiles verificados
+   y concede permiso de lectura a sus sitios una vez.
+3. Pulsa **Iniciar escaneo**: abre una página cada vez, espera datos, lee campos
+   públicos y devuelve las capturas. Puedes cancelar y descargar el lote terminado.
+4. Importa con `uv run sports-capture import-scan /ruta/sports-scan-UUID.json`.
+
+**Abrir las cinco fuentes** abre SofaScore, Betano Perú, Apuesta Total, Te Apuesto
+ y Flashscore Perú. Sus lectores reales siguen pendientes porque la red cloud
+bloqueó la inspección. No confundas ese botón con extracción de cuotas. El motor
+funciona con perfiles válidos y está probado con fixtures; no hay perfiles reales
+inventados ni extracción universal de cualquier página.
+
+Consulta la [guía completa](https://github.com/MarkosAZ/Analisis-GPT/blob/main/docs/AUTOMATIC_SCANNING.md).
+
+## Capturar manualmente
 
 1. Abre una página pública de SofaScore, Betano u otra fuente que tengas permiso
    de consultar. Puedes escribir su URL en el panel y pulsar **Abrir**.
@@ -39,20 +56,25 @@ claves, cuenta propia ni servidor. Firefox todavía no está soportado.
 
 El formulario se guarda solo en memoria: cerrar el panel o recargarlo puede
 perder datos sin exportar. Cambiar de página obliga a vincularla y recapturar.
-No hay extracción masiva, polling, interceptación de tráfico, evasión de bloqueos
-ni integración específica con APIs internas de las casas.
+Este modo manual no recorre páginas. El motor automático espera datos DOM con
+límites por fuente; no intercepta tráfico, evade bloqueos ni usa APIs internas.
 
 ## Límites de privacidad y procedencia
 
-Permisos: `activeTab`, `scripting`, `sidePanel`. Sin acceso permanente a hosts,
-cookies, historial, red de la pestaña o almacenamiento de credenciales. No hay
+Permisos: `activeTab`, `scripting`, `sidePanel` y `storage`. El modo automático
+solicita acceso opcional solo a los hosts de los perfiles elegidos. El puente se
+limita a la web del proyecto y desarrollo local; no hay acceso a cookies, historial
+o tráfico, ni almacenamiento de credenciales. No hay
 subida automática. Se exporta únicamente el origen HTTPS, sin ruta, query ni
 fragmento. Nunca uses formularios de cuenta, saldo, boletas o apuestas realizadas.
 El selector rechaza patrones sensibles conocidos y el importador exige campos
 exactos. Estos filtros no pueden certificar que cualquier página o texto escrito
 manualmente sea público: la revisión antes de exportar sigue siendo necesaria.
 
-Cada captura se etiqueta `MANUAL_REVIEW` y, al importarse, `MANUAL_UNVERIFIED`.
+Las capturas automáticas se etiquetan `AUTOMATIC_DOM` / `DOM_UNVERIFIED`, conservan
+lector y perfil/hash, y nunca se presentan como revisión humana. Los perfiles
+son locales; capturas y progreso viven en sesión hasta cerrar el navegador.
+Cada captura manual se etiqueta `MANUAL_REVIEW` y, al importarse, `MANUAL_UNVERIFIED`.
 No certifica autenticidad del proveedor ni simultaneidad de todas las cuotas.
 El reloj del navegador no demuestra disponibilidad histórica. El servidor fija
 la recepción; la normalización y resolución de mappings registran su propio
@@ -71,5 +93,5 @@ uv run sports-capture pending-mappings
 El calendario necesita confirmación explícita de identidades antes de crear
 eventos. El procedimiento completo está en `docs/BROWSER_CAPTURE.md` del repo.
 Las cuotas se archivan para la fase 3; no generan predicciones ni apuestas.
-Conserva los JSON fuera de Git. El ZIP contiene únicamente los ocho archivos
-de esta extensión, nunca capturas ni la conversación HTML original.
+Conserva los JSON y perfiles fuera de Git. El ZIP contiene únicamente los assets
+explícitos de esta extensión, nunca capturas ni la conversación HTML original.

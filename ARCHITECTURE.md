@@ -78,7 +78,7 @@ El frontend consume JSON estático; la sección privada, cuando exista, usará u
 
 Foundation se completa antes de construir calendario/tracking. Los modelos estadísticos preceden a GBM/redes y el sitio final se construye sobre contratos de datos comprobados. Las reglas de seguridad, tiempo e identidad de ciclos son invariantes de todas las fases. Las decisiones y ambigüedades se registran en [docs/decisions](docs/decisions).
 
-## Provider manual del navegador
+## Providers del navegador
 
 La extensión MV3 usa una pestaña y un panel lateral. Exporta únicamente una
 observación de campos revisados; no comunica con PostgreSQL ni contiene secretos.
@@ -88,7 +88,15 @@ Los objetos permanecen en el `ObjectStore` inmutable. Los manifests conservan
 RAW y versión; cada interpretación registra su propia disponibilidad SQL.
 
 El circuito y sus límites están en [BROWSER_CAPTURE.md](docs/BROWSER_CAPTURE.md).
-No es un provider automático ni un scheduler remoto. Los locks transaccionales
+La extensión 0.3 añade un motor automático iniciado desde la web: puente acotado
+al sitio del proyecto, perfiles declarativos por fuente, permisos HTTPS opcionales
+y una cola secuencial en el service worker. `storage.session` conserva el run y
+las capturas entre suspensiones; un reinicio marca el trabajo incompleto como
+INTERRUPTED, sin fingir continuidad. El control y las capturas no son subidos por
+Pages; la importación CLI sigue siendo necesaria para persistir RAW en el backend.
+
+Los lectores específicos de las cinco fuentes reales siguen sin verificar. No
+es un scheduler remoto. Los locks transaccionales
 de este importador serializan escrituras breves; no sustituyen locks TTL/fencing
 cuando empiecen los análisis largos. R2 y la recepción remota son integraciones
 pendientes, no propiedades implícitas del adapter local.

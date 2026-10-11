@@ -43,3 +43,32 @@ def capture_data(kind="CALENDAR"):
         "kind": kind,
         "record": record,
     }
+
+
+def automatic_data(kind="CALENDAR"):
+    data = capture_data(kind)
+    data.update(
+        {
+            "schema_version": "browser_capture_v2",
+            "capture_method": "AUTOMATIC_DOM",
+            "scan_id": str(uuid4()),
+            "reader_version": "dom_fields_v1",
+            "profile_id": "fixture",
+            "profile_version": "1",
+            "profile_hash": "a" * 64,
+        }
+    )
+    return data
+
+
+def scan_data():
+    capture = automatic_data()
+    observed = datetime.fromisoformat(capture["captured_at"])
+    return {
+        "schema_version": "browser_scan_v1",
+        "scan_id": capture["scan_id"],
+        "started_at": (observed - timedelta(seconds=1)).isoformat(),
+        "finished_at": (observed + timedelta(seconds=1)).isoformat(),
+        "status": "COMPLETED",
+        "captures": [capture],
+    }

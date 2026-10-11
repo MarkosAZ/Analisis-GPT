@@ -15,7 +15,7 @@ from sports_analysis.config import Settings
 from sports_analysis.db.browser import BrowserIngestor
 from sports_analysis.db.public_calendar import export_public_calendar
 from sports_analysis.domain.events import Sport
-from sports_analysis.providers.browser import MAX_CAPTURE_BYTES
+from sports_analysis.providers.browser import MAX_CAPTURE_BYTES, MAX_SCAN_BYTES, parse_scan
 from sports_analysis.storage.objects import LocalObjectStore
 
 
@@ -24,6 +24,8 @@ def main() -> int:
     commands = parser.add_subparsers(dest="command", required=True)
     ingest = commands.add_parser("import")
     ingest.add_argument("file", type=Path)
+    scan_ingest = commands.add_parser("import-scan")
+    scan_ingest.add_argument("file", type=Path)
     process = commands.add_parser("reprocess")
     process.add_argument("capture_id", type=UUID)
     process.add_argument("--request-id", type=UUID, required=True)
@@ -54,6 +56,12 @@ def main() -> int:
                     payload = handle.read(MAX_CAPTURE_BYTES + 1)
                 result = ingestor.import_bytes(payload)
                 print(json.dumps(asdict(result), default=str))
+            elif args.command == "import-scan":
+                with args.file.open("rb") as handle:
+                    members = parse_scan(handle.read(MAX_SCAN_BYTES + 1))
+                for payload in members:
+                    result = ingestor.import_bytes(payload)
+                    print(json.dumps(asdict(result), default=str))
             elif args.command == "reprocess":
                 print(
                     json.dumps(

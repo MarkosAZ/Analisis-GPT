@@ -220,6 +220,32 @@ ni predicciones. No satisface por sí solo Fase 2 ni toda Fase 7. Se preservan l
 criterios de las fases posteriores. Véanse [WEB.md](WEB.md) y
 [ADR 0008](decisions/0008-static-calendar-web.md).
 
+## Decisión posterior: escaneo automático desde la web
+
+El usuario aclaró que la extensión debe abrir por sí sola las páginas necesarias
+al iniciar un escaneo desde la web. El modo manual se conserva como alternativa;
+deja de ser la única forma de captura. Las fuentes elegidas son SofaScore,
+Betano Perú, Apuesta Total, Te Apuesto y Flashscore Perú, con las URLs exactas
+registradas en [AUTOMATIC_SCANNING.md](AUTOMATIC_SCANNING.md).
+
+La implementación usa una cola local de pestañas, lectores DOM declarativos
+versionados, permisos por host y un puente restringido a la página del proyecto.
+Una ejecución no puede inventar IDs, completar cuotas ausentes o mezclar campos
+de distintos mercados. Se detiene ante accesos restringidos o datos ambiguos.
+No hay evasión de CAPTCHA, sesión automatizada, clics de apuesta ni datos privados.
+
+`browser_capture_v2` etiqueta AUTOMATIC_DOM y conserva scan/lector/perfil/hash.
+La calidad es DOM_UNVERIFIED; PostgreSQL sigue fijando disponibilidad real al
+recibir los datos. `browser_scan_v1` agrupa capturas sin sustituir su identidad ni
+alterar las fechas originales. El normalizador v1 de capturas manuales mantiene
+compatibilidad e inmutabilidad. Se conserva RAW antes de NORMALIZED.
+
+Los lectores de esas cinco webs no se declaran implementados: su inspección fue
+bloqueada por la red cloud. El motor se valida con fixtures y perfiles explícitos.
+Abrir sus cinco portadas no equivale a extraer cuotas o descubrir todos sus
+eventos. La navegación específica entre eventos/mercados queda pendiente de
+validar cada fuente. Véase [ADR 0009](decisions/0009-automatic-browser-scanning.md).
+
 ## Decisiones todavía abiertas
 
 La ausencia de una cifra o regla en este documento no autoriza a inferir que fue acordada. Estas decisiones deben cerrarse en la fase que las necesite y registrar versión, evidencia y vigencia:

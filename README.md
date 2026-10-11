@@ -8,11 +8,15 @@ separados. La información histórica se consulta según lo que estaba disponibl
 Foundation está completada. **Fase 2 está en curso**: extensión local para Chrome/
 Edge, capturas manuales revisadas, importación RAW, calendario, mappings, ciclos y
 tracking. Incluye una **web HTML estática** con calendario, seguimiento e historial
-de ciclos. Todavía no hay predicciones ni proveedor automático.
+de ciclos. La extensión 0.3 permite iniciar un recorrido automático de fuentes
+configuradas desde la web. Sus lectores para SofaScore, Betano Perú, Apuesta Total,
+Te Apuesto y Flashscore Perú siguen pendientes de verificación; no hay predicciones.
 
 Para usar la extensión, sigue la [guía de instalación](extension/README.md).
 El [recorrido de importación](docs/BROWSER_CAPTURE.md) explica cómo conectar las
 capturas con PostgreSQL sin entregar credenciales al navegador.
+La [guía de escaneo automático](docs/AUTOMATIC_SCANNING.md) explica el botón web,
+los permisos por sitio, los perfiles de lectura y el bloqueo de las fuentes reales.
 
 ## Empezar
 

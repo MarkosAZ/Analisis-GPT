@@ -88,7 +88,7 @@ uv run pytest tests/extension
 uv run python scripts/package_extension.py .local/sports-capture-extension.zip
 ```
 
-El empaquetador usa ocho archivos explícitos y un ZIP reproducible; rechaza
+El empaquetador usa una lista explícita de assets y un ZIP reproducible; rechaza
 sobrescribir un destino existente. No requiere npm ni descarga código remoto
 para la extensión. CI instala el navegador de Playwright y no sube capturas como
 artifacts. La descarga necesita acceso a `cdn.playwright.dev` y los destinos
@@ -99,6 +99,9 @@ sistema. Además, su política administrativa impide cargar extensiones sin
 empaquetar. Las pruebas sirven los assets propios bajo su CSP y simulan APIs
 Chrome; ejecutan DOM, formulario, descarga y contrato Python en Chromium real.
 Esto no prueba instalación MV3 ni concesión real de activeTab/sidePanel.
+El escáner añade pruebas de DOM real, puente de mensajes, permisos simulados,
+cancelación/reinicio y contratos JS→Python; no se presentan como una instalación
+real del service worker ni como aceptación con las cinco fuentes seleccionadas.
 Completa esa aceptación en Chrome/Edge local con la
 [guía de instalación](extension/README.md): toolbar, vincular pestaña, seleccionar
 un dato público, vista previa/descarga, cambio de pestaña y revocación de acceso.
@@ -107,6 +110,11 @@ La [operación del importador](docs/BROWSER_CAPTURE.md) usa solo variables de
 entorno para DB/almacenamiento. Las migraciones 0005/0006 se agregan a las cuatro
 anteriores sin modificarlas. El recorrido no necesita secretos de producción
 cuando se ejecuta sobre el PostgreSQL desechable de desarrollo.
+
+Para capturas automáticas usa `sports-capture import-scan` con el JSON descargado
+fuera de Git. El contrato v2 convive con las capturas manuales v1. No se requieren
+migraciones adicionales; el normalizador v2 mantiene procedencia y fecha de
+recepción confiable. Consulta [AUTOMATIC_SCANNING.md](docs/AUTOMATIC_SCANNING.md).
 
 ## Ejecutar la web HTML
 

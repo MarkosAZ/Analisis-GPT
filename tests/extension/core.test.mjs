@@ -8,11 +8,14 @@ const values = {
   period: 'FULL_TIME', line_type: 'HALF_LINE', line: '2.5',
   outcome_1: 'OVER', odds_1: '1.90', outcome_2: 'UNDER', odds_2: '2.00',
 };
-test('explicit permissions, no permanent hosts or remote connections', () => {
+test('optional source grants and narrowly scoped project bridge without network access', () => {
   const manifest = JSON.parse(readFileSync(new URL('../../extension/manifest.json', import.meta.url)));
-  assert.deepEqual(manifest.permissions, ['activeTab', 'scripting', 'sidePanel']);
+  assert.deepEqual(manifest.permissions, ['activeTab', 'scripting', 'sidePanel', 'storage']);
   assert.equal(manifest.host_permissions, undefined);
-  assert.equal(manifest.content_scripts, undefined);
+  assert.deepEqual(manifest.optional_host_permissions, ['https://*/*']);
+  assert.deepEqual(manifest.content_scripts[0].matches, ['https://markosaz.github.io/Analisis-GPT/*', 'http://127.0.0.1/*', 'http://localhost/*']);
+  assert.equal(manifest.content_scripts[0].all_frames, false);
+  assert.equal(manifest.externally_connectable, undefined);
   assert.match(manifest.content_security_policy.extension_pages, /connect-src 'none'/);
 });
 test('navigation strips query and fragment; capture stores origin only', () => {

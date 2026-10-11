@@ -14,7 +14,14 @@ except ModuleNotFoundError:
     from package_extension import build as build_extension
 
 ROOT = Path(__file__).resolve().parents[1]
-SITE_ASSETS = ("index.html", "web/styles.css", "web/app.mjs", "web/core.mjs", "web/icon.svg")
+SITE_ASSETS = (
+    "index.html",
+    "web/styles.css",
+    "web/app.mjs",
+    "web/core.mjs",
+    "web/scanner.mjs",
+    "web/icon.svg",
+)
 
 
 def build_site(output: Path, *, snapshot: Path | None = None) -> None:

@@ -20,7 +20,6 @@ from psycopg.types.json import Jsonb
 from sports_analysis.domain.events import Sport
 from sports_analysis.domain.temporal import utc
 from sports_analysis.providers.browser import (
-    NORMALIZER,
     BrowserCapture,
     CalendarRecord,
     CaptureError,
@@ -144,16 +143,31 @@ class BrowserIngestor:
             temporal = normalize_capture(self.store, raw)
             if sha256(response.payload) != receipt["content_hash"]:
                 raise CaptureError("Stored RAW differs from the durable receipt")
-            # Stable manifest bytes let failed transactions retry without rewriting history.
+            # Preserve v1 manual manifests byte-for-byte; automatic readers get v2.
+            normalizer = capture.normalizer_version
+            provenance = (
+                {
+                    "scan_id": str(capture.scan_id),
+                    "reader_version": capture.reader_version,
+                    "profile_id": capture.profile_id,
+                    "profile_version": capture.profile_version,
+                    "profile_hash": capture.profile_hash,
+                }
+                if capture.scan_id
+                else {}
+            )
             manifest = self.store.put_if_absent(
-                f"manifests/browser/{NORMALIZER}/{capture_id}.json",
+                f"manifests/browser/{normalizer}/{capture_id}.json",
                 canonical_json(
                     {
-                        "schema_version": "browser_normalized_v1",
-                        "normalizer_version": NORMALIZER,
+                        "schema_version": "browser_normalized_v2"
+                        if capture.scan_id
+                        else "browser_normalized_v1",
+                        "normalizer_version": normalizer,
                         "capture_id": str(capture_id),
-                        "capture_method": "MANUAL_REVIEW",
-                        "quality": "MANUAL_UNVERIFIED",
+                        "capture_method": capture.capture_method,
+                        "quality": "DOM_UNVERIFIED" if capture.scan_id else "MANUAL_UNVERIFIED",
+                        **provenance,
                         "record": json.loads(response.payload)["record"],
                         "occurred_at": temporal.occurred_at.isoformat(),
                         "available_at": temporal.available_at.isoformat(),
@@ -175,7 +189,7 @@ class BrowserIngestor:
                     cycle_id,
                     status,
                     reason,
-                    NORMALIZER,
+                    normalizer,
                     Jsonb(asdict(manifest)),
                 ),
             )

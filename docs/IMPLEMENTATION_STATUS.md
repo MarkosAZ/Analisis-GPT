@@ -93,6 +93,21 @@ SofaScore/Betano.
 
 ## Siguiente incremento exacto
 
+La iteración 04 incorpora el escaneo automático pedido posteriormente. Motor,
+puente web y contratos de ingestión están implementados y probados con fixtures;
+la instalación MV3 real sigue pendiente de validación. Los lectores de SofaScore,
+Betano Perú, Apuesta Total, Te Apuesto y Flashscore Perú están **NO IMPLEMENTADOS**:
+las páginas están catalogadas, pero no hay selectores de fuente validados.
+La red cloud denegó las cinco inspecciones con 403. El botón «Abrir las
+cinco fuentes» solo navega; no se contabiliza como captura deportiva.
+
+Para cerrar ese incremento: publicar la ampliación de red guardada en el borrador
+del entorno, verificar DOM público y permisos de cada fuente, versionar sus
+perfiles y probar Chrome/Edge real de extremo a extremo. Si una fuente restringe
+automatización, usar acceso autorizado o dejarla deshabilitada. No eludir bloqueos.
+El detalle vigente está en [AUTOMATIC_SCANNING.md](AUTOMATIC_SCANNING.md) y el
+inventario/validación en [ITERATION_04_REPORT.md](ITERATION_04_REPORT.md).
+
 La iteración 03 incorpora la web HTML pedida por el usuario: consulta de partidos,
 tracking e historial de ciclos, exportación pública SQL, validación estricta,
 servidor aislado y workflow Pages. No añade migraciones ni modelos. El alcance,

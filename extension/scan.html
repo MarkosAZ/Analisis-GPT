@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Fuentes del escaneo · Analisis-GPT</title><link rel="stylesheet" href="panel.css"><link rel="stylesheet" href="scan.css"><script type="module" src="scan.mjs"></script></head>
+<body><header><span class="eyebrow">ANÁLISIS GPT / ESCANEO AUTOMÁTICO</span><h1>Configura una vez.<br>Escanea desde la web.</h1><p>La extensión abre las páginas configuradas, captura sus datos públicos y cierra las pestañas que creó. No pulsa cuotas ni realiza apuestas.</p></header>
+<main><section><h2>Tus cinco fuentes</h2><ul id="source-catalog"></ul><p>Estas páginas ya pueden abrirse juntas desde la web. Sus lectores específicos están pendientes de verificación: no se incluyen selectores inventados ni se confunde abrir una página con capturar cuotas.</p></section><section><h2>Fuentes autorizadas</h2><p>Importa un perfil de lectura preparado para las páginas que tienes permiso de consultar. Cada perfil define qué datos deportivos leer; un sitio sin lector verificado no se interpreta automáticamente.</p>
+<label for="profile-file">Archivo de perfiles</label><input id="profile-file" type="file" accept=".json,application/json">
+<label for="profiles">Configuración de fuentes</label><textarea id="profiles" rows="18" spellcheck="false" aria-describedby="profile-help"></textarea>
+<p id="profile-help" class="hint">Solo páginas HTTPS públicas, sin enlaces de cuenta, parámetros ni credenciales. Hasta 10 fuentes y 200 capturas por recorrido. Los perfiles se guardan solo en esta extensión.</p>
+<label class="check"><input id="authorized" type="checkbox"> Tengo autorización para consultar automáticamente las fuentes de estos perfiles.</label>
+<div class="scan-actions"><button id="save-sources" type="button">Guardar y conceder permisos</button><button id="clear-sources" class="secondary" type="button">Quitar fuentes y permisos</button></div>
+<p id="scan-notice" role="status" aria-live="polite">Cargando configuración…</p>
+<p>Después vuelve a Analisis-GPT, abre Extensión y pulsa <strong>Iniciar escaneo</strong>. El acceso se concede por cada sitio; no necesitas volver a seleccionar cada campo.</p>
+<p><a href="https://github.com/MarkosAZ/Analisis-GPT/blob/main/docs/AUTOMATIC_SCANNING.md" target="_blank" rel="noopener noreferrer">Guía de perfiles y lectores</a></p></section></main></body></html>

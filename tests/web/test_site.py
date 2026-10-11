@@ -141,3 +141,56 @@ def test_missing_snapshot_fails_visibly_and_demo_still_works(browser, site):
     expect(page.locator("#message")).to_contain_text("No se pudo leer")
     open_demo(page)
     context.close()
+
+
+def test_web_starts_scan_tracks_progress_and_downloads_automatic_batch(browser, site, tmp_path):
+    from sports_analysis.providers.browser import parse_scan
+    from tests.browser_fixtures import scan_data
+
+    bundle = scan_data()
+    context = browser.new_context()
+    context.add_init_script(
+        "window.bundle="
+        + json.dumps(bundle)
+        + ";"
+        + """
+        window.scanCommands=[]; window.run=null;
+        window.addEventListener('message', event => {
+            const message=event.data;
+            if(message?.channel!=='sports_scan_request_v1')return;
+            window.scanCommands.push(message);
+            if(message.command==='START') {
+                window.run={scan_id:bundle.scan_id,status:'RUNNING',started_at:bundle.started_at,finished_at:null,count:0,sources:[{id:'fixture',label:'Fixture',status:'RUNNING',count:0,error:null}]};
+                setTimeout(()=>{window.run.status='COMPLETED';window.run.count=1;window.run.sources[0].status='COMPLETED';window.run.sources[0].count=1;},400);
+            }
+            const data=message.command==='RESULTS'?bundle:{configured:1,permitted:true,run:window.run};
+            window.postMessage({channel:'sports_scan_response_v1',request_id:message.request_id,result:{ok:true,data}},location.origin);
+        });
+    """
+    )
+    page = context.new_page()
+    page.goto(site + "/#extension")
+    expect(page.locator("#scanner-start")).to_be_enabled()
+    page.locator("#scanner-start").click()
+    expect(page.locator("#scanner-state")).to_have_text("Escaneando")
+    expect(page.locator("#scanner-start")).to_be_disabled()
+    expect(page.locator("#scanner-download")).to_be_enabled(timeout=7000)
+    with page.expect_download() as download:
+        page.locator("#scanner-download").click()
+    path = tmp_path / download.value.suggested_filename
+    download.value.save_as(path)
+    assert len(parse_scan(path.read_bytes())) == 1
+    assert page.evaluate("window.scanCommands.filter(item=>item.command==='START').length") == 1
+    assert page.evaluate("window.scanCommands.every(item=>Object.keys(item).length===3)")
+    context.close()
+
+
+def test_web_without_extension_does_not_claim_scanning_works(browser, site):
+    context = browser.new_context(viewport={"width": 390, "height": 844})
+    page = context.new_page()
+    page.goto(site + "/#extension")
+    expect(page.locator("#scanner-state")).to_have_text("Extensión no conectada", timeout=7000)
+    expect(page.locator("#scanner-start")).to_be_disabled()
+    expect(page.locator("#scanner-open-sources")).to_be_disabled()
+    assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
+    context.close()
