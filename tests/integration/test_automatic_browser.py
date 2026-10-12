@@ -8,7 +8,7 @@ from sports_analysis.db.browser import BrowserIngestor
 from sports_analysis.domain.events import Sport
 from sports_analysis.providers.browser import parse_scan
 from sports_analysis.storage.objects import LocalObjectStore, ObjectRef
-from tests.browser_fixtures import automatic_data, scan_data
+from tests.browser_fixtures import automatic_data, scan_data, source_data
 
 pytestmark = pytest.mark.integration
 
@@ -51,3 +51,24 @@ def test_automatic_odds_stay_raw_only(db, tmp_path):
     result = ingestor.import_bytes(json.dumps(data).encode())
     assert result.disposition == "RAW_ONLY"
     assert db.execute("SELECT count(*) FROM market.odds_captures").fetchone()[0] == 0
+
+
+def test_included_source_reader_ingestion_preserves_public_permissions_and_v3_manifest(
+    db, tmp_path
+):
+    db.execute("SET LOCAL ROLE sports_public_worker")
+    store = LocalObjectStore(tmp_path)
+    ingestor = BrowserIngestor(db, store)
+    payload = json.dumps(source_data("betano_public_v1")).encode()
+    first = ingestor.import_bytes(payload)
+    assert first.disposition == "RAW_ONLY"
+    assert ingestor.import_bytes(payload) == first
+    ref = db.execute(
+        "SELECT manifest_ref FROM provider.browser_observations WHERE observation_id=%s",
+        (first.observation_id,),
+    ).fetchone()[0]
+    manifest = json.loads(store.get(ObjectRef(**ref)))
+    assert manifest["schema_version"] == "browser_normalized_v3"
+    assert manifest["quality"] == "SOURCE_UNVERIFIED"
+    assert manifest["available_at"] > manifest["occurred_at"]
+    assert manifest["reader_version"] == "betano_public_v1"

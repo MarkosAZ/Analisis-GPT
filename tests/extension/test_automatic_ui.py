@@ -194,6 +194,7 @@ def test_profile_setup_requests_only_selected_hosts_after_user_gesture(browser):
     page = context.new_page()
     page.goto("https://extension-ui.example/scan.html")
     page.wait_for_function("document.getElementById('profiles').value.includes('schema_version')")
+    page.locator("#advanced-profiles > summary").click()
     page.locator("#profiles").fill(
         json.dumps({"schema_version": "browser_scan_config_v1", "sources": [source_profile()]})
     )
@@ -210,4 +211,63 @@ def test_profile_setup_requests_only_selected_hosts_after_user_gesture(browser):
         "document.getElementById('scan-notice').textContent.includes('Fuentes eliminadas')"
     )
     assert page.evaluate("window.config.sources") == []
+    page.locator('#preset-sources input[value="sofascore"]').uncheck()
+    page.locator('#preset-sources input[value="apuesta_total"]').uncheck()
+    page.locator('#preset-sources input[value="flashscore_pe"]').uncheck()
+    assert page.locator('#preset-sources input[value="te_apuesto"]').is_disabled()
+    page.locator("#save-presets").click()
+    page.wait_for_function("window.config.sources[0]?.reader==='betano_public_v1'")
+    assert page.evaluate("window.grants.at(-1)") == {"origins": ["https://www.betano.pe/*"]}
+    assert page.evaluate("window.config.sources.length") == 1
+    context.close()
+
+
+def test_betano_page_projection_excludes_private_state_and_never_clicks_or_hooks(browser):
+    context = browser.new_context()
+    context.route(
+        "https://www.betano.pe/**",
+        lambda route: route.fulfill(
+            content_type="text/html",
+            body="<!doctype html><title>Fixture public football</title><button onclick='window.clicked=true'>1.90</button>",
+        ),
+    )
+    page = context.new_page()
+    page.goto("https://www.betano.pe/sport/futbol/")
+    page.evaluate("""() => {
+      window.originalFetch=window.fetch;
+      const market={name:'Total de goles',selections:[{name:'Más de 2.5',price:1.9},{name:'Menos de 2.5',price:2.0}]};
+      window.initial_state={events:[{id:101,name:'Fixture Home - Fixture Away',sportId:1,markets:[market],stake:'SECRET_STAKE'}],
+        wallet:{events:[{id:999,name:'PRIVATE_ACCOUNT',sportId:1,markets:[market]}]},token:'SECRET_TOKEN'};
+      Object.defineProperty(window.initial_state,'accessor',{enumerable:true,get:()=>{throw new Error('MUST_NOT_READ_GETTER');}});
+    }""")
+    script = (EXTENSION / "source-page.mjs").read_text().replace("export function", "function", 1)
+    result = page.evaluate(f"() => {{ {script}; return collectBetano(); }}")
+    assert [event["id"] for event in result["events"]] == ["101"]
+    assert "SECRET" not in json.dumps(result)
+    assert "PRIVATE_ACCOUNT" not in json.dumps(result)
+    assert page.evaluate("window.fetch === window.originalFetch && !window.clicked")
+    context.route(
+        "https://www.betano.pe/ext/*",
+        lambda route: route.fulfill(
+            content_type="text/javascript",
+            body=(EXTENSION / route.request.url.rsplit("/", 1)[-1]).read_bytes(),
+        ),
+    )
+    capture = page.evaluate(
+        """async projection => {
+          const { nativeProfile } = await import('/ext/connectors.mjs');
+          const { betanoRows } = await import('/ext/source-parsers.mjs');
+          const { automaticCapture, profileHash } = await import('/ext/scan-contract.mjs');
+          const profile=nativeProfile('betano_pe');
+          return automaticCapture(profile,betanoRows(projection.events).records[0],new Date().toISOString(),crypto.randomUUID(),await profileHash(profile));
+        }""",
+        result,
+    )
+    parsed = parse_capture(json.dumps(capture).encode())
+    assert parsed.capture_method == "AUTOMATIC_SOURCE"
+    assert parsed.record.event_id == "101"
+    page.evaluate("document.title='CAPTCHA: verify you are human'")
+    assert page.evaluate(f"() => {{ {script}; return collectBetano(); }}") == {
+        "error": "ACCESS_RESTRICTED"
+    }
     context.close()

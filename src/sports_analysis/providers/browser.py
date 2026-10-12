@@ -21,6 +21,13 @@ from sports_analysis.storage.raw import StoredRawCapture, canonical_json, load_r
 MAX_CAPTURE_BYTES = 16_384
 SCHEMA = "browser_capture_v1"
 AUTO_SCHEMA = "browser_capture_v2"
+SOURCE_SCHEMA = "browser_capture_v3"
+SOURCE_READERS = {
+    "sofascore_calendar_v1": ("sofascore", "https://www.sofascore.com", "CALENDAR"),
+    "flashscore_calendar_v1": ("flashscore_pe", "https://www.flashscore.pe", "CALENDAR"),
+    "betano_public_v1": ("betano_pe", "https://www.betano.pe", "ODDS"),
+    "apuesta_total_public_v1": ("apuesta_total", "https://www.apuestatotal.com", "ODDS"),
+}
 NORMALIZER = "browser_normalizer_v1"
 MAX_SCAN_BYTES = 4 * 1024 * 1024
 _COMMON = {"event_id", "sport"}
@@ -124,14 +131,20 @@ class BrowserCapture:
 
     @property
     def schema_version(self) -> str:
+        if self.reader_version in SOURCE_READERS:
+            return SOURCE_SCHEMA
         return AUTO_SCHEMA if self.scan_id else SCHEMA
 
     @property
     def capture_method(self) -> str:
+        if self.schema_version == SOURCE_SCHEMA:
+            return "AUTOMATIC_SOURCE"
         return "AUTOMATIC_DOM" if self.scan_id else "MANUAL_REVIEW"
 
     @property
     def normalizer_version(self) -> str:
+        if self.schema_version == SOURCE_SCHEMA:
+            return "browser_normalizer_v3"
         return "browser_normalizer_v2" if self.scan_id else NORMALIZER
 
     @property
@@ -146,7 +159,10 @@ def parse_capture(payload: bytes) -> BrowserCapture:
         raise CaptureError("Capture exceeds the public schema size limit")
     try:
         data = json.loads(payload, object_pairs_hook=_unique_pairs)
-        automatic = isinstance(data, dict) and data.get("schema_version") == AUTO_SCHEMA
+        automatic = isinstance(data, dict) and data.get("schema_version") in {
+            AUTO_SCHEMA,
+            SOURCE_SCHEMA,
+        }
         _keys(
             data,
             {
@@ -167,6 +183,7 @@ def parse_capture(payload: bytes) -> BrowserCapture:
         if (data["schema_version"], data["capture_method"]) not in {
             (SCHEMA, "MANUAL_REVIEW"),
             (AUTO_SCHEMA, "AUTOMATIC_DOM"),
+            (SOURCE_SCHEMA, "AUTOMATIC_SOURCE"),
         }:
             raise CaptureError("Unsupported browser capture schema")
         scan_id = None
@@ -174,7 +191,14 @@ def parse_capture(payload: bytes) -> BrowserCapture:
             scan_id = UUID(data["scan_id"])
             if scan_id.version != 4 or str(scan_id) != data["scan_id"]:
                 raise CaptureError("Invalid scan identity")
-            if data["reader_version"] != "dom_fields_v1":
+            if data["schema_version"] == SOURCE_SCHEMA:
+                binding = SOURCE_READERS.get(data["reader_version"])
+                if (
+                    binding != (data["profile_id"], data["source_origin"], data["kind"])
+                    or data["profile_version"] != "1"
+                ):
+                    raise CaptureError("Source reader provenance does not match")
+            elif data["reader_version"] != "dom_fields_v1":
                 raise CaptureError("Unsupported browser reader")
             public_text(data["profile_id"], identifier=True)
             public_text(data["profile_version"], identifier=True)
@@ -210,6 +234,8 @@ def parse_capture(payload: bytes) -> BrowserCapture:
         row = _keys(data["record"], _COMMON | (_CALENDAR if kind == "CALENDAR" else _ODDS))
         event_id = public_text(row["event_id"], identifier=True)
         sport = Sport(row["sport"])
+        if data["schema_version"] == SOURCE_SCHEMA and sport != Sport.FOOTBALL:
+            raise CaptureError("Source reader sport is unsupported")
         record: CalendarRecord | OddsRecord
         if kind == "CALENDAR":
             for entity in ("competition", "home", "away"):

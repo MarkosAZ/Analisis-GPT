@@ -1,4 +1,4 @@
-# Captura y escaneo deportivo — extensión local 0.3
+# Captura y escaneo deportivo — extensión local 0.4
 
 Extensión Manifest V3 para Chrome 116+ y Edge compatible con `sidePanel`.
 Inicia el escaneo desde la web de Analisis-GPT. El panel lateral conserva la captura manual como alternativa.
@@ -19,17 +19,23 @@ claves, cuenta propia ni servidor. Firefox todavía no está soportado.
 ## Escaneo automático
 
 1. Actualiza la extensión y recarga la web de Analisis-GPT.
-2. En la sección Extensión pulsa **Configurar fuentes**, carga perfiles verificados
-   y concede permiso de lectura a sus sitios una vez.
+2. En la sección Extensión pulsa **Configurar fuentes**, marca las fuentes y
+   pulsa **Activar fuentes seleccionadas**. Concede acceso una vez. No necesitas
+   preparar JSON; los perfiles DOM propios quedan como opción avanzada.
 3. Pulsa **Iniciar escaneo**: abre una página cada vez, espera datos, lee campos
-   públicos y devuelve las capturas. Puedes cancelar y descargar el lote terminado.
+   públicos y devuelve las capturas. Consulta la vista previa, cancela cuando
+   necesites y descarga las capturas o el diagnóstico, incluso si una fuente falla.
 4. Importa con `uv run sports-capture import-scan /ruta/sports-scan-UUID.json`.
 
-**Abrir las cinco fuentes** abre SofaScore, Betano Perú, Apuesta Total, Te Apuesto
- y Flashscore Perú. Sus lectores reales siguen pendientes porque la red cloud
-bloqueó la inspección. No confundas ese botón con extracción de cuotas. El motor
-funciona con perfiles válidos y está probado con fixtures; no hay perfiles reales
-inventados ni extracción universal de cualquier página.
+**Iniciar escaneo** ejecuta conectores incluidos para SofaScore, Betano, Apuesta
+Total y Flashscore. Calendario de fútbol de hoy (Lima), mercados completos
+compatibles y límites de captura; no promete todos los mercados. Te Apuesto sigue
+sin conector. **Abrir las cinco fuentes** es navegación independiente.
+
+Los formatos se implementaron a partir de la extensión de referencia aportada
+por el usuario y se probaron con fixtures. La aceptación con sitios reales sigue
+pendiente: el diagnóstico informa denegaciones o cambios de formato. El escáner
+se ejecuta en tu navegador; no necesitas cambiar la red del entorno cloud.
 
 Consulta la [guía completa](https://github.com/MarkosAZ/Analisis-GPT/blob/main/docs/AUTOMATIC_SCANNING.md).
 
@@ -57,21 +63,26 @@ Consulta la [guía completa](https://github.com/MarkosAZ/Analisis-GPT/blob/main/
 El formulario se guarda solo en memoria: cerrar el panel o recargarlo puede
 perder datos sin exportar. Cambiar de página obliga a vincularla y recapturar.
 Este modo manual no recorre páginas. El motor automático espera datos DOM con
-límites por fuente; no intercepta tráfico, evade bloqueos ni usa APIs internas.
+límites por fuente. Los conectores incluidos también consultan rutas públicas
+fijas; no interceptan tráfico ni eluden denegaciones.
 
 ## Límites de privacidad y procedencia
 
 Permisos: `activeTab`, `scripting`, `sidePanel` y `storage`. El modo automático
 solicita acceso opcional solo a los hosts de los perfiles elegidos. El puente se
 limita a la web del proyecto y desarrollo local; no hay acceso a cookies, historial
-o tráfico, ni almacenamiento de credenciales. No hay
+o tráfico, ni almacenamiento de credenciales. Apuesta Total permite que el navegador
+envíe la sesión normal del sportsbook, sin leer/exportar cookies o iniciar sesión.
+Los hosts adicionales del feed/sportsbook se muestran antes de conceder acceso.
+No hay
 subida automática. Se exporta únicamente el origen HTTPS, sin ruta, query ni
 fragmento. Nunca uses formularios de cuenta, saldo, boletas o apuestas realizadas.
 El selector rechaza patrones sensibles conocidos y el importador exige campos
 exactos. Estos filtros no pueden certificar que cualquier página o texto escrito
 manualmente sea público: la revisión antes de exportar sigue siendo necesaria.
 
-Las capturas automáticas se etiquetan `AUTOMATIC_DOM` / `DOM_UNVERIFIED`, conservan
+Los conectores incluidos se etiquetan `AUTOMATIC_SOURCE` / `SOURCE_UNVERIFIED`
+(v3); los perfiles DOM conservan `AUTOMATIC_DOM` / `DOM_UNVERIFIED` (v2). Conservan
 lector y perfil/hash, y nunca se presentan como revisión humana. Los perfiles
 son locales; capturas y progreso viven en sesión hasta cerrar el navegador.
 Cada captura manual se etiqueta `MANUAL_REVIEW` y, al importarse, `MANUAL_UNVERIFIED`.

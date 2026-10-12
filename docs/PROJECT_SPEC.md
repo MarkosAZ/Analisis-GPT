@@ -240,11 +240,27 @@ recibir los datos. `browser_scan_v1` agrupa capturas sin sustituir su identidad 
 alterar las fechas originales. El normalizador v1 de capturas manuales mantiene
 compatibilidad e inmutabilidad. Se conserva RAW antes de NORMALIZED.
 
-Los lectores de esas cinco webs no se declaran implementados: su inspección fue
-bloqueada por la red cloud. El motor se valida con fixtures y perfiles explícitos.
-Abrir sus cinco portadas no equivale a extraer cuotas o descubrir todos sus
-eventos. La navegación específica entre eventos/mercados queda pendiente de
-validar cada fuente. Véase [ADR 0009](decisions/0009-automatic-browser-scanning.md).
+La versión inicial solo incluía perfiles DOM. La petición posterior aporta una
+extensión de referencia y exige conectores ejecutados en el navegador del usuario.
+La versión 0.4 incluye SofaScore/Flashscore para calendario de fútbol de hoy y
+Betano/Apuesta Total para mercados compatibles; la configuración ofrece casillas
+por fuente y el sitio muestra vista previa y diagnóstico descargable. Te Apuesto
+no está en la referencia y sigue sin lector. Se conservan perfiles DOM avanzados.
+
+Los conectores consultan rutas públicas fijas o una proyección acotada del estado
+de la página, sin interceptar tráfico ni exportar cuentas. La sesión ordinaria
+del sportsbook solo se utiliza para sus endpoints públicos; no se recopilan
+cookies/encabezados de autorización. No hay reintentos que busquen eludir un
+401/403/429. `browser_capture_v3` identifica AUTOMATIC_SOURCE y SOURCE_UNVERIFIED;
+el backend mantiene recibos confiables, RAW y normalización versionada. Los datos
+de vista previa no sustituyen mappings ni publicación de calendario.
+
+El desarrollo de los conectores se apoya en los formatos inspeccionados de la
+referencia; su ejecución no depende del acceso del cloud a las fuentes. Las
+pruebas usan fixtures, no certifican acceso real. La navegación por cada partido,
+todos sus mercados y aceptación real siguen pendientes. Véanse ADRs
+[0009](decisions/0009-automatic-browser-scanning.md) y
+[0010](decisions/0010-browser-source-connectors.md).
 
 ## Decisiones todavía abiertas
 

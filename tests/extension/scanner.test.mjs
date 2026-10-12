@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { Scanner } from '../../extension/scanner.mjs';
 import { projectPage, scanLocation, validateConfig, profileHash } from '../../extension/scan-contract.mjs';
 import { SOURCES } from '../../extension/sources.mjs';
+import { nativeProfile } from '../../extension/connectors.mjs';
 
 const values = { event_id: 'event-1', sport: 'FOOTBALL', bookmaker: 'Fixture Book', market: 'TOTAL_GOALS', period: 'FULL_TIME', line_type: 'HALF_LINE', line: '2.5', outcome_1: 'OVER', odds_1: '1.9', outcome_2: 'UNDER', odds_2: '2.0' };
 export const profile = () => ({ id: 'fixture', version: '1', label: 'Public fixture', url: 'https://fixture.example/markets', reader: 'dom_fields_v1', kind: 'ODDS', row_selector: '.market', fields: Object.fromEntries(Object.keys(values).map(key => [key, { selector: `.${key}`, attribute: null }])) });
@@ -111,4 +112,37 @@ test('session persistence failure cannot leave a phantom running scan or open pa
   await assert.rejects(s.scanner.start(crypto.randomUUID(), 999), /STATE_UNAVAILABLE/);
   assert.equal(s.opened.length, 0); assert.equal(s.scanner.run.status, 'INTERRUPTED');
   assert.equal(s.scanner.run.sources[0].status, 'INTERRUPTED');
+});
+test('included connector failures yield a downloadable diagnostic and do not prevent the next source', async () => {
+  const s = setup([nativeProfile('sofascore'), profile()]);
+  let requests = 0;
+  s.scanner.fetcher = async () => { requests++; return new Response('PRIVATE RESPONSE', { status: 403 }); };
+  await s.scanner.start(crypto.randomUUID(), 99); await s.scanner.task;
+  const report = await s.scanner.report();
+  assert.equal(report.status, 'COMPLETED_WITH_ERRORS'); assert.equal(report.sources[0].error, 'HTTP_403');
+  assert.equal(report.sources[1].status, 'COMPLETED'); assert.equal(requests, 1);
+  assert.equal(report.count, 1); assert.equal(JSON.stringify(report).includes('PRIVATE RESPONSE'), false);
+  assert.equal((await s.scanner.status()).run.preview[0].record.market, 'TOTAL_GOALS');
+  assert.deepEqual(s.closed, [1, 2]);
+});
+test('native HTTP captures retain v3 identity, complete before closing tabs and cancel network work', async () => {
+  const s = setup([nativeProfile('sofascore')]);
+  const create = s.api.tabs.create;
+  s.api.tabs.create = async options => { const tab = await create(options); tab.url = 'https://www.sofascore.com/es/'; return tab; };
+  const event = { id: 1, startTimestamp: Date.parse('2030-06-15T20:00:00Z') / 1000, status: { type: 'notstarted' }, tournament: { id: 2, name: 'Fixture League' }, homeTeam: { id: 3, name: 'Fixture Home' }, awayTeam: { id: 4, name: 'Fixture Away' } };
+  s.scanner.fetcher = async url => new Response(JSON.stringify({ events: url.endsWith('2030-06-15') ? [event] : [] }));
+  await s.scanner.start(crypto.randomUUID(), 99); await s.scanner.task;
+  assert.equal((await s.scanner.results()).captures[0].capture_method, 'AUTOMATIC_SOURCE');
+  assert.deepEqual(s.closed, [1]);
+  const cancelled = setup([nativeProfile('sofascore')]); let signal;
+  cancelled.scanner.fetcher = (_url, options) => new Promise((_resolve, reject) => { signal = options.signal; signal.addEventListener('abort', () => reject(new Error('Abort'))); });
+  await cancelled.scanner.start(crypto.randomUUID(), 99); await new Promise(setImmediate);
+  await cancelled.scanner.cancel(); await cancelled.scanner.task;
+  assert.equal(signal.aborted, true); assert.equal((await cancelled.scanner.results()).captures.length, 0);
+});
+test('closing scan tabs never cancels a user navigation that is still pending', async () => {
+  const s = setup();
+  const tab = await s.api.tabs.create({ url: 'https://fixture.example/markets', active: false });
+  tab.pendingUrl = 'https://other.example/';
+  await s.scanner.closeTab({ id: tab.id, url: tab.url }); assert.deepEqual(s.closed, []);
 });

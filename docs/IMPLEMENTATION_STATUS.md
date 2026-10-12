@@ -93,20 +93,24 @@ SofaScore/Betano.
 
 ## Siguiente incremento exacto
 
-La iteración 04 incorpora el escaneo automático pedido posteriormente. Motor,
-puente web y contratos de ingestión están implementados y probados con fixtures;
-la instalación MV3 real sigue pendiente de validación. Los lectores de SofaScore,
-Betano Perú, Apuesta Total, Te Apuesto y Flashscore Perú están **NO IMPLEMENTADOS**:
-las páginas están catalogadas, pero no hay selectores de fuente validados.
-La red cloud denegó las cinco inspecciones con 403. El botón «Abrir las
-cinco fuentes» solo navega; no se contabiliza como captura deportiva.
+La iteración 05 añade conectores de navegador a partir de la extensión de
+referencia aportada por el usuario. Motor, puente, configuración sin JSON,
+vista previa, diagnóstico y contratos v1/v2/v3 están implementados y probados.
 
-Para cerrar ese incremento: publicar la ampliación de red guardada en el borrador
-del entorno, verificar DOM público y permisos de cada fuente, versionar sus
-perfiles y probar Chrome/Edge real de extremo a extremo. Si una fuente restringe
-automatización, usar acceso autorizado o dejarla deshabilitada. No eludir bloqueos.
+| Incremento 05 | Estado | Límite |
+| --- | --- | --- |
+| SofaScore y Flashscore | IMPLEMENTADO PARCIALMENTE | Lectores de calendario de fútbol de hoy; fixtures aprobados, aceptación real pendiente |
+| Betano y Apuesta Total | IMPLEMENTADO PARCIALMENTE | Lectores de mercados completos compatibles; sin recorrer todos los partidos/mercados; aceptación real pendiente |
+| Te Apuesto | NO IMPLEMENTADO | No aparece en la referencia; apertura/manual disponibles |
+| Activación por casillas, preview y diagnóstico | IMPLEMENTADO Y CORRECTO | UI Chromium, APIs Chrome simuladas y contratos estrictos |
+| Instalación MV3 y respuestas reales | IMPLEMENTADO PARCIALMENTE | ZIP listo; requiere validación en Chrome/Edge local |
+
+El uso de los conectores no exige publicar una ampliación de red del cloud:
+se ejecutan desde el navegador del usuario. La red cloud sigue limitando la
+verificación remota de fuentes, no el desarrollo del lector. Probar el ZIP
+contra fuentes autorizadas y revisar diagnósticos; no eludir denegaciones.
 El detalle vigente está en [AUTOMATIC_SCANNING.md](AUTOMATIC_SCANNING.md) y el
-inventario/validación en [ITERATION_04_REPORT.md](ITERATION_04_REPORT.md).
+inventario/validación en [ITERATION_05_REPORT.md](ITERATION_05_REPORT.md).
 
 La iteración 03 incorpora la web HTML pedida por el usuario: consulta de partidos,
 tracking e historial de ciclos, exportación pública SQL, validación estricta,

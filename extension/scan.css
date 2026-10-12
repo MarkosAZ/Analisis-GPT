@@ -1,1 +1,6 @@
 body{max-width:860px;margin:auto}textarea{box-sizing:border-box;width:100%;padding:14px;border:1px solid #ccd8d3;border-radius:10px;font:13px/1.5 ui-monospace,monospace;resize:vertical}.scan-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}.check{display:flex;align-items:flex-start;gap:10px;margin-top:18px}.check input{width:auto;margin-top:3px}a{color:#1b6651}#scan-notice{line-height:1.5}
+.source-choice { display: flex; align-items: flex-start; gap: 12px; padding: 16px 0; border-bottom: 1px solid #d7e0e5; }
+.source-choice input { width: auto; margin-top: 5px; }
+.source-choice span { display: grid; gap: 5px; }
+.source-choice small { overflow-wrap: anywhere; }
+summary { cursor: pointer; font-weight: 600; }

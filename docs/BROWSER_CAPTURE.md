@@ -2,7 +2,8 @@
 
 Este documento conserva el recorrido manual compatible. La extensión también
 incorpora [escaneo automático](AUTOMATIC_SCANNING.md), solicitado después, con
-capturas `browser_capture_v2` y lotes `browser_scan_v1`. El comando
+capturas DOM `browser_capture_v2`, conectores incluidos `browser_capture_v3`
+y lotes `browser_scan_v1`. El comando
 `sports-capture import-scan` conserva el mismo pipeline y las mismas fronteras SQL.
 
 Esta iteración incorpora la extensión solicitada como provider manual de Fase 2.

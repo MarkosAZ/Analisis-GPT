@@ -50,8 +50,9 @@ El manifest solicita `activeTab`, `scripting`, `sidePanel` y `storage`. Declara
 hosts HTTPS opcionales: solo los sitios de perfiles aprobados reciben permisos
 tras el diálogo del navegador. El script de conexión se instala únicamente en
 el sitio del proyecto y desarrollo local; comprueba origen, ruta, puerto y frame.
-No recoge cookies, credenciales o tráfico ni sube datos. La CSP
-prohíbe conexiones y marcos; scripts y estilos son locales. El selector se activa
+No lee valores de cookies, credenciales o tráfico ni sube datos. La CSP
+permite conexiones solo a los tres hosts API de los conectores incluidos y
+prohíbe marcos; scripts y estilos son locales. El selector se activa
 por el usuario, usa una capa que evita pulsar el botón original, caduca y rechaza
 formularios/boletas conocidos. No es una garantía sobre cualquier DOM hostil:
 la revisión de campos públicos sigue siendo obligatoria.
@@ -64,10 +65,27 @@ añadiesen forzosamente. El ZIP usa una lista fija de assets de la extensión.
 
 La web solo emite comandos acotados; no puede enviar URLs, perfiles ni scripts
 para ejecutar. Solo la página interna de configuración puede guardar perfiles.
-El motor lee campos DOM visibles y únicos, sin clics, formularios, scripts de
-terceros ni interceptación de red. Rechaza redirecciones, login/CAPTCHA detectados,
+El motor DOM lee campos visibles y únicos, sin clics, formularios ni
+interceptación de red. Rechaza redirecciones, login/CAPTCHA detectados,
 campos sensibles conocidos y resultados ambiguos. Estos controles no certifican
 un DOM arbitrario: cada lector real necesita validación y autorización de fuente.
+
+Los conectores 0.4 usan GETs a rutas fijas de SofaScore, Flashscore y el sportsbook
+de Apuesta Total. No aceptan destinos arbitrarios, respuestas mayores de 2 MiB
+ni redirecciones; 401/403/429 no provocan reintentos o rutas alternativas. Solo
+Apuesta Total usa la sesión que el navegador envía normalmente al sportsbook:
+`credentials: include` en sus endpoints públicos, sin leer cookies ni construir
+encabezados de autorización. No se fuerza un login, logout o cambio de sesión.
+Los otros conectores usan `credentials: omit`. La cabecera de protocolo pública
+de Flashscore procede de la referencia indicada por el usuario; no es un token
+personal ni se descubre interceptando solicitudes.
+
+Betano proyecta únicamente eventos y mercados públicos del estado de su página;
+excluye ramas de cuenta/boleta y no devuelve el estado completo. No instala hooks
+de fetch/XHR, no recoge encabezados, no clica pestañas o cuotas y no imprime
+cuerpos HTTP en errores. Los datos de página se vuelven a validar antes de
+exportar; el backend exige un vínculo explícito entre lector, origen, perfil,
+versión, deporte y tipo. Esto no autentica un JSON producido por un cliente.
 
 Los perfiles viven en `storage.local` de la extensión; capturas/estado en
 `storage.session`, restringidos a contextos confiables. No contienen credenciales.

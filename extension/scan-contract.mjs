@@ -1,4 +1,5 @@
 import { publicLocation, text, identifier, buildCapture } from './core.mjs';
+import { CONNECTORS, isNative, validateNative } from './connectors.mjs';
 
 export const READER = 'dom_fields_v1';
 export const MAX_SOURCES = 10;
@@ -42,6 +43,11 @@ export function validateConfig(config) {
       new TextEncoder().encode(JSON.stringify(config)).length > MAX_CONFIG_BYTES) throw new Error('INVALID_CONFIG');
   const ids = new Set();
   for (const source of config.sources) {
+    if (isNative(source)) {
+      validateNative(source);
+      if (ids.has(source.id)) throw new Error('INVALID_CONFIG');
+      ids.add(source.id); continue;
+    }
     exact(source, ['id', 'version', 'label', 'url', 'reader', 'kind', 'row_selector', 'fields']);
     identifier(source.id, 'perfil'); identifier(source.version, 'versión'); text(source.label, 'fuente');
     if (ids.has(source.id) || source.reader !== READER || !['CALENDAR', 'ODDS'].includes(source.kind)) throw new Error('INVALID_CONFIG');
@@ -63,7 +69,7 @@ export function validateConfig(config) {
   }
   return config;
 }
-export const originsFor = config => [...new Set(config.sources.map(source => `${scanLocation(source.url).origin}/*`))];
+export const originsFor = config => [...new Set(config.sources.flatMap(source => isNative(source) ? CONNECTORS[source.id].hosts : [`${scanLocation(source.url).origin}/*`]))];
 export function canonical(value) {
   if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
   if (value && typeof value === 'object') return `{${Object.keys(value).sort().map(key => `${JSON.stringify(key)}:${canonical(value[key])}`).join(',')}}`;
@@ -75,6 +81,7 @@ export async function profileHash(source) {
 }
 export function automaticCapture(source, row, observedAt, scanId, hash) {
   const capture = buildCapture(source.kind, row, scanLocation(source.url).origin, new Date(observedAt));
-  return { ...capture, schema_version: 'browser_capture_v2', capture_method: 'AUTOMATIC_DOM',
-    scan_id: scanId, reader_version: READER, profile_id: source.id, profile_version: source.version, profile_hash: hash };
+  const native = isNative(source);
+  return { ...capture, schema_version: native ? 'browser_capture_v3' : 'browser_capture_v2', capture_method: native ? 'AUTOMATIC_SOURCE' : 'AUTOMATIC_DOM',
+    scan_id: scanId, reader_version: native ? source.reader : READER, profile_id: source.id, profile_version: source.version, profile_hash: hash };
 }

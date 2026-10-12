@@ -112,9 +112,14 @@ anteriores sin modificarlas. El recorrido no necesita secretos de producción
 cuando se ejecuta sobre el PostgreSQL desechable de desarrollo.
 
 Para capturas automáticas usa `sports-capture import-scan` con el JSON descargado
-fuera de Git. El contrato v2 convive con las capturas manuales v1. No se requieren
+fuera de Git. Los contratos DOM v2 y conectores v3 conviven con capturas manuales
+v1. Los conectores 0.4 se ejecutan en el navegador del usuario: su funcionamiento
+no requiere permitir esos hosts en la red cloud. Para desarrollar, los fixtures
+de protocolos y los mocks de red son reproducibles; no equivalen a aceptación
+real de fuentes. No se requieren
 migraciones adicionales; el normalizador v2 mantiene procedencia y fecha de
-recepción confiable. Consulta [AUTOMATIC_SCANNING.md](docs/AUTOMATIC_SCANNING.md).
+recepción confiable (normalizador v3 para conectores incluidos). Consulta
+[AUTOMATIC_SCANNING.md](docs/AUTOMATIC_SCANNING.md) y ADR 0010.
 
 ## Ejecutar la web HTML
 

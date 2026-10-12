@@ -9,7 +9,7 @@
     if (event.source !== window || event.origin !== location.origin || !data || data.channel !== 'sports_scan_request_v1' ||
         Object.keys(data).sort().join(',') !== 'channel,command,request_id' ||
         !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(data.request_id) ||
-        !['STATUS', 'START', 'CANCEL', 'RESULTS', 'CONFIGURE', 'OPEN_SOURCES'].includes(data.command)) return;
+        !['STATUS', 'START', 'CANCEL', 'RESULTS', 'REPORT', 'CONFIGURE', 'OPEN_SOURCES'].includes(data.command)) return;
     let result;
     try { result = await chrome.runtime.sendMessage({ ...data, channel: 'sports_scan_v1' }); }
     catch { result = { ok: false, error: 'DISCONNECTED' }; }

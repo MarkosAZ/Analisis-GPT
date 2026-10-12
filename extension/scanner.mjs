@@ -1,10 +1,11 @@
 import { automaticCapture, MAX_CAPTURES, originsFor, profileHash, TERMINAL, UUID, validateConfig } from './scan-contract.mjs';
 import { readPublicRows } from './reader.mjs';
+import { isNative, nativeLanding, readConnector } from './connectors.mjs';
 
 const emptyConfig = () => ({ schema_version: 'browser_scan_config_v1', sources: [] });
 export class Scanner {
-  constructor(api, { now = () => Date.now(), sleep = ms => new Promise(resolve => setTimeout(resolve, ms)) } = {}) {
-    this.api = api; this.now = now; this.sleep = sleep;
+  constructor(api, { now = () => Date.now(), sleep = ms => new Promise(resolve => setTimeout(resolve, ms)), fetcher = fetch } = {}) {
+    this.api = api; this.now = now; this.sleep = sleep; this.fetcher = fetcher;
     this.run = null; this.starting = false; this.epoch = 0; this.writes = Promise.resolve();
     this.ready = this.restore();
   }
@@ -40,7 +41,8 @@ export class Scanner {
     return { configured: config.sources.length,
       permitted: !config.sources.length || await this.api.permissions.contains({ origins: originsFor(config) }),
       run: this.run ? { scan_id: this.run.scan_id, status: this.run.status, started_at: this.run.started_at,
-        finished_at: this.run.finished_at, count: this.run.captures.length, sources: structuredClone(this.run.sources) } : null };
+        finished_at: this.run.finished_at, count: this.run.captures.length, sources: structuredClone(this.run.sources),
+        preview: structuredClone(this.run.captures.slice(0, 20).map(capture => ({ kind: capture.kind, record: capture.record, captured_at: capture.captured_at, source_origin: capture.source_origin }))) } : null };
   }
   async start(requestId, ownerTab) {
     await this.ready;
@@ -57,8 +59,9 @@ export class Scanner {
       if (epoch !== this.epoch) throw new Error('CANCELLED');
       const run = { scan_id: requestId, status: 'RUNNING', started_at: new Date(this.now()).toISOString(),
         finished_at: null, owner_tab: ownerTab, tab: null, captures: [],
-        sources: config.sources.map(source => ({ id: source.id, label: source.label, status: 'PENDING', error: null, count: 0 })) };
+        sources: config.sources.map(source => ({ id: source.id, label: source.label, reader: source.reader, version: source.version, status: 'PENDING', error: null, count: 0 })) };
       this.run = run;
+      this.abort = new AbortController();
       try { await this.persist(); }
       catch { run.status = 'INTERRUPTED'; run.finished_at = new Date(this.now()).toISOString(); for (const source of run.sources) source.status = 'INTERRUPTED'; throw new Error('STATE_UNAVAILABLE'); }
       this.task = this.drive(run, config.sources).catch(async () => {
@@ -76,11 +79,13 @@ export class Scanner {
     if (!tab) return;
     try {
       const current = await this.api.tabs.get(tab.id);
+      if (current.pendingUrl && current.pendingUrl !== tab.url) return;
       if (current.url === tab.url || current.pendingUrl === tab.url) await this.api.tabs.remove(tab.id);
     } catch { /* Do not touch user tabs or tabs already closed. */ }
   }
   async cancel() {
     await this.ready; this.epoch += 1;
+    this.abort?.abort();
     const run = this.run;
     if (!run || run.status !== 'RUNNING') return;
     run.status = 'CANCELLED'; run.finished_at = new Date(this.now()).toISOString();
@@ -92,6 +97,13 @@ export class Scanner {
     if (!this.run || !TERMINAL.includes(this.run.status)) throw new Error('NOT_FINISHED');
     return { schema_version: 'browser_scan_v1', scan_id: this.run.scan_id, started_at: this.run.started_at,
       finished_at: this.run.finished_at, status: this.run.status, captures: structuredClone(this.run.captures) };
+  }
+  async report() {
+    await this.ready;
+    if (!this.run || !TERMINAL.includes(this.run.status)) throw new Error('NOT_FINISHED');
+    return { schema_version: 'browser_scan_report_v1', extension_version: this.api.runtime?.getManifest?.().version || null, scan_id: this.run.scan_id, started_at: this.run.started_at,
+      finished_at: this.run.finished_at, status: this.run.status, count: this.run.captures.length,
+      sources: structuredClone(this.run.sources) };
   }
   async drive(run, profiles) {
     for (let i = 0; i < profiles.length; i += 1) {
@@ -107,14 +119,18 @@ export class Scanner {
         owned = { id: tab.id, url: source.url };
         if (!this.alive(run)) return;
         run.tab = owned; await this.persist();
-        const deadline = this.now() + 20000;
+        const deadline = this.now() + 30000;
         let read = null;
         while (this.alive(run) && this.now() < deadline) {
           const current = await this.api.tabs.get(tab.id);
           const waitingForInitialNavigation = current.url === 'about:blank' && current.pendingUrl === source.url;
-          if ((!waitingForInitialNavigation && current.url && current.url !== source.url) || (current.pendingUrl && current.pendingUrl !== source.url)) throw new Error('SOURCE_CHANGED');
+          const accepted = value => value === owned.url || (!owned.resolved && isNative(source) && nativeLanding(source, value));
+          if ((!waitingForInitialNavigation && current.url && !accepted(current.url)) || (current.pendingUrl && !accepted(current.pendingUrl))) throw new Error('SOURCE_CHANGED');
           if (current.status === 'complete') {
-            const results = await this.api.scripting.executeScript({ target: { tabId: tab.id, frameIds: [0] }, world: 'ISOLATED', func: readPublicRows, args: [source] });
+            if (isNative(source) && !owned.resolved) { owned.url = current.url; owned.resolved = true; await this.persist(); }
+            const results = isNative(source)
+              ? [{ result: await readConnector(source, this.api, tab.id, { now: this.now, fetcher: this.fetcher, signal: this.abort.signal }) }]
+              : await this.api.scripting.executeScript({ target: { tabId: tab.id, frameIds: [0] }, world: 'ISOLATED', func: readPublicRows, args: [source] });
             if (!this.alive(run)) return;
             read = results[0]?.result;
             if (read && !read.error) break;
@@ -123,9 +139,10 @@ export class Scanner {
           await this.sleep(500);
         }
         if (!this.alive(run)) return;
+        if (this.now() >= deadline) throw new Error('TIMEOUT');
         if (!read || read.error) throw new Error('TIMEOUT');
         const current = await this.api.tabs.get(tab.id);
-        if (current.url !== source.url || current.pendingUrl || read.origin !== new URL(source.url).origin) throw new Error('SOURCE_CHANGED');
+        if (current.url !== owned.url || current.pendingUrl || read.origin !== new URL(source.url).origin) throw new Error('SOURCE_CHANGED');
         if (!Array.isArray(read.records) || !read.records.length || read.records.length > 50 ||
             !Number.isFinite(Date.parse(read.observed_at)) || Date.parse(read.observed_at) > this.now() ||
             Date.parse(read.observed_at) < Date.parse(run.started_at)) throw new Error('READ_FAILED');
@@ -134,10 +151,11 @@ export class Scanner {
         const captures = read.records.map(row => automaticCapture(source, row, read.observed_at, run.scan_id, hash));
         if (!this.alive(run)) return;
         run.captures.push(...captures); item.count = captures.length; item.status = 'COMPLETED';
+        item.skipped = read.skipped || 0; item.truncated = read.truncated || 0; item.reader = source.reader;
       } catch (error) {
         if (!this.alive(run)) return;
         item.status = 'FAILED';
-        const codes = ['NEEDS_PERMISSIONS', 'SOURCE_CHANGED', 'ACCESS_RESTRICTED', 'ROW_LIMIT', 'PRIVATE_FIELD', 'AMBIGUOUS_FIELD', 'INVALID_FIELD', 'INVALID_SELECTOR', 'READ_FAILED', 'TIMEOUT', 'CAPTURE_LIMIT'];
+        const codes = ['NEEDS_PERMISSIONS', 'SOURCE_CHANGED', 'ACCESS_RESTRICTED', 'ROW_LIMIT', 'PRIVATE_FIELD', 'AMBIGUOUS_FIELD', 'INVALID_FIELD', 'INVALID_SELECTOR', 'READ_FAILED', 'TIMEOUT', 'CAPTURE_LIMIT', 'HTTP_401', 'HTTP_403', 'HTTP_429', 'SOURCE_HTTP_ERROR', 'NETWORK_ERROR', 'RESPONSE_LIMIT', 'SCHEMA_CHANGED', 'AMBIGUOUS_SOURCE', 'NO_PUBLIC_DATA'];
         item.error = codes.includes(error.message) ? error.message : 'READ_FAILED';
       } finally {
         await this.closeTab(owned);

@@ -3,6 +3,8 @@
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
+from sports_analysis.providers.browser import SOURCE_READERS
+
 
 def capture_data(kind="CALENDAR"):
     record = (
@@ -72,3 +74,17 @@ def scan_data():
         "status": "COMPLETED",
         "captures": [capture],
     }
+
+
+def source_data(reader="sofascore_calendar_v1"):
+    profile, origin, kind = SOURCE_READERS[reader]
+    data = automatic_data(kind)
+    data.update(
+        schema_version="browser_capture_v3",
+        capture_method="AUTOMATIC_SOURCE",
+        reader_version=reader,
+        profile_id=profile,
+        profile_version="1",
+        source_origin=origin,
+    )
+    return data

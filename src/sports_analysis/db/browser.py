@@ -160,13 +160,15 @@ class BrowserIngestor:
                 f"manifests/browser/{normalizer}/{capture_id}.json",
                 canonical_json(
                     {
-                        "schema_version": "browser_normalized_v2"
-                        if capture.scan_id
-                        else "browser_normalized_v1",
+                        "schema_version": normalizer.replace("normalizer", "normalized"),
                         "normalizer_version": normalizer,
                         "capture_id": str(capture_id),
                         "capture_method": capture.capture_method,
-                        "quality": "DOM_UNVERIFIED" if capture.scan_id else "MANUAL_UNVERIFIED",
+                        "quality": "SOURCE_UNVERIFIED"
+                        if capture.capture_method == "AUTOMATIC_SOURCE"
+                        else "DOM_UNVERIFIED"
+                        if capture.scan_id
+                        else "MANUAL_UNVERIFIED",
                         **provenance,
                         "record": json.loads(response.payload)["record"],
                         "occurred_at": temporal.occurred_at.isoformat(),

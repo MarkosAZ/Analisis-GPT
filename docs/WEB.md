@@ -21,11 +21,11 @@ las fechas se muestran en America/Lima. Partidos usa el ciclo más reciente de
 cada evento; Historial conserva los anteriores. La sección Extensión ofrece una
 guía y un ZIP generado exclusivamente con sus assets.
 
-La sección Extensión también detecta la versión 0.3, permite abrir las cinco
-fuentes elegidas e iniciar/cancelar un recorrido automático con perfiles válidos.
-Muestra progreso y permite descargar el lote local. No modifica automáticamente
+La sección Extensión detecta la extensión, permite abrir las cinco fuentes
+elegidas e iniciar/cancelar un recorrido con conectores incluidos o perfiles DOM.
+Muestra progreso, vista previa y permite descargar capturas y diagnóstico local. No modifica automáticamente
 el calendario publicado. Consulta [AUTOMATIC_SCANNING.md](AUTOMATIC_SCANNING.md)
-para los lectores aún pendientes y el circuito de importación.
+para el alcance de los lectores y el circuito de importación.
 
 El calendario publicado empieza vacío. **Explorar ejemplo** carga cinco eventos
 ficticios, incluyendo un aplazamiento con dos ciclos, con aviso visible. No son
@@ -99,6 +99,12 @@ El resultado de publicación se verificó en Actions. La ejecución
 HTTP y las pruebas locales de la web sí se completaron.
 
 ## Validación y límites
+
+La extensión 0.4 se configura mediante casillas y muestra vista previa local y
+diagnóstico descargable desde la sección Extensión. La vista previa no altera
+`public_calendar_v1`. Los conectores consultan fuentes desde el navegador del
+usuario, no desde Pages; la CSP del sitio sigue limitada al mismo origen.
+Consulta [AUTOMATIC_SCANNING.md](AUTOMATIC_SCANNING.md) para alcance por fuente.
 
 ```bash
 uv run pytest tests/web

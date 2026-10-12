@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Análisis GPT · Captura deportiva",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "minimum_chrome_version": "116",
   "description": "Escaneo deportivo desde Analisis-GPT con fuentes autorizadas y captura manual opcional.",
   "permissions": ["activeTab", "scripting", "sidePanel", "storage"],
@@ -17,6 +17,6 @@
   "background": {"service_worker": "background.js", "type": "module"},
   "side_panel": {"default_path": "panel.html"},
   "content_security_policy": {
-    "extension_pages": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'"
+    "extension_pages": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src https://www.sofascore.com https://global.flashscore.ninja https://prod20392.kmianko.com; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'"
   }
 }

@@ -161,9 +161,9 @@ def test_web_starts_scan_tracks_progress_and_downloads_automatic_batch(browser, 
             window.scanCommands.push(message);
             if(message.command==='START') {
                 window.run={scan_id:bundle.scan_id,status:'RUNNING',started_at:bundle.started_at,finished_at:null,count:0,sources:[{id:'fixture',label:'Fixture',status:'RUNNING',count:0,error:null}]};
-                setTimeout(()=>{window.run.status='COMPLETED';window.run.count=1;window.run.sources[0].status='COMPLETED';window.run.sources[0].count=1;},400);
+                setTimeout(()=>{window.run.status='COMPLETED';window.run.count=1;window.run.sources[0].status='COMPLETED';window.run.sources[0].count=1;window.run.preview=bundle.captures;},400);
             }
-            const data=message.command==='RESULTS'?bundle:{configured:1,permitted:true,run:window.run};
+            const data=message.command==='RESULTS'?bundle:message.command==='REPORT'?{schema_version:'browser_scan_report_v1',scan_id:bundle.scan_id,sources:window.run.sources}:{configured:1,permitted:true,run:window.run};
             window.postMessage({channel:'sports_scan_response_v1',request_id:message.request_id,result:{ok:true,data}},location.origin);
         });
     """
@@ -180,6 +180,14 @@ def test_web_starts_scan_tracks_progress_and_downloads_automatic_batch(browser, 
     path = tmp_path / download.value.suggested_filename
     download.value.save_as(path)
     assert len(parse_scan(path.read_bytes())) == 1
+    expect(page.locator("#scanner-preview-list")).to_contain_text("North FC")
+    with page.expect_download() as report_download:
+        page.locator("#scanner-report").click()
+    report_path = tmp_path / report_download.value.suggested_filename
+    report_download.value.save_as(report_path)
+    report = json.loads(report_path.read_text())
+    assert report["schema_version"] == "browser_scan_report_v1"
+    assert "captures" not in report
     assert page.evaluate("window.scanCommands.filter(item=>item.command==='START').length") == 1
     assert page.evaluate("window.scanCommands.every(item=>Object.keys(item).length===3)")
     context.close()

@@ -88,15 +88,20 @@ Los objetos permanecen en el `ObjectStore` inmutable. Los manifests conservan
 RAW y versión; cada interpretación registra su propia disponibilidad SQL.
 
 El circuito y sus límites están en [BROWSER_CAPTURE.md](docs/BROWSER_CAPTURE.md).
-La extensión 0.3 añade un motor automático iniciado desde la web: puente acotado
+La extensión añade un motor automático iniciado desde la web: puente acotado
 al sitio del proyecto, perfiles declarativos por fuente, permisos HTTPS opcionales
 y una cola secuencial en el service worker. `storage.session` conserva el run y
 las capturas entre suspensiones; un reinicio marca el trabajo incompleto como
 INTERRUPTED, sin fingir continuidad. El control y las capturas no son subidos por
 Pages; la importación CLI sigue siendo necesaria para persistir RAW en el backend.
 
-Los lectores específicos de las cinco fuentes reales siguen sin verificar. No
-es un scheduler remoto. Los locks transaccionales
+La versión 0.4 añade `connectors.mjs`, proyecciones puras en `source-parsers.mjs`
+y una lectura acotada del estado público de Betano en `source-page.mjs`. Las
+peticiones GET tienen destinos fijos; la web no puede enviar URLs ni argumentos
+de red. Los conectores generan capturas v3, con normalizador v3 y calidad
+SOURCE_UNVERIFIED. La UI muestra capturas locales separadas del calendario público.
+La aceptación real de los cuatro conectores y el lector Te Apuesto siguen
+pendientes. No es un scheduler remoto. Los locks transaccionales
 de este importador serializan escrituras breves; no sustituyen locks TTL/fencing
 cuando empiecen los análisis largos. R2 y la recepción remota son integraciones
 pendientes, no propiedades implícitas del adapter local.

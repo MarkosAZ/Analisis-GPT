@@ -13,7 +13,7 @@ chrome.runtime.onMessage.addListener((message, sender, reply) => {
   const settings = sender.id === chrome.runtime.id && sender.url === chrome.runtime.getURL('scan.html');
   const site = sender.id === chrome.runtime.id && sender.frameId === 0 && projectPage(sender.url) && Number.isInteger(sender.tab?.id);
   if ((!settings && !site) || !message || message.channel !== 'sports_scan_v1' || !UUID.test(message.request_id)) return false;
-  const commands = site ? ['STATUS', 'START', 'CANCEL', 'RESULTS', 'CONFIGURE', 'OPEN_SOURCES'] : ['STATUS', 'GET_CONFIG', 'SET_CONFIG', 'CANCEL'];
+  const commands = site ? ['STATUS', 'START', 'CANCEL', 'RESULTS', 'REPORT', 'CONFIGURE', 'OPEN_SOURCES'] : ['STATUS', 'GET_CONFIG', 'SET_CONFIG', 'CANCEL'];
   const keys = message.command === 'SET_CONFIG' ? ['channel', 'request_id', 'command', 'config'] : ['channel', 'request_id', 'command'];
   if (!commands.includes(message.command) || Object.keys(message).length !== keys.length || !keys.every(key => Object.hasOwn(message, key))) return false;
   (async () => {
@@ -23,6 +23,7 @@ chrome.runtime.onMessage.addListener((message, sender, reply) => {
       case 'START': await scanner.start(message.request_id, sender.tab.id); return scanner.status();
       case 'CANCEL': await scanner.cancel(); return scanner.status();
       case 'RESULTS': return scanner.results();
+      case 'REPORT': return scanner.report();
       case 'OPEN_SOURCES': {
         if (openingSources || scanner.starting || scanner.run?.status === 'RUNNING') throw new Error('BUSY');
         if (Date.now() - openedAt < 60000) throw new Error('COOLDOWN');
